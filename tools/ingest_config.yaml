@@ -1,0 +1,10 @@
+max_image_width: 1200
+image_quality: 85
+max_video_duration_sec: 30
+max_video_file_mb: 50
+assets_dir: assets
+staged_dir: staged
+ingest_dir: ingest
+content_json: content.json
+supported_image_ext: [".jpg", ".jpeg", ".png", ".webp", ".gif"]
+supported_video_ext: [".mp4", ".webm", ".mov"]
