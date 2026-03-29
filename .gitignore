@@ -10,3 +10,5 @@ data/*.jsonl
 data/*.csv
 .vscode/
 *.egg-info/
+ingest/
+staged/
