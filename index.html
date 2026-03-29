@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI or Not?</title>
+  <meta name="description" content="Can you tell what's real? A deepfake literacy game for youth education.">
+
+  <style>
+    /* ========================================================================
+       CSS RESET & VARIABLES
+       ======================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      /* Color palette — dark mode, bold but not garish */
+      --bg-primary: #0f0f1a;
+      --bg-secondary: #1a1a2e;
+      --bg-card: #16213e;
+      --bg-hover: #1f2b4d;
+      --text-primary: #e8e8f0;
+      --text-secondary: #a0a0b8;
+      --text-muted: #6a6a80;
+      --accent-blue: #4fc3f7;
+      --accent-purple: #b388ff;
+      --accent-green: #69f0ae;
+      --accent-red: #ff5252;
+      --accent-yellow: #ffd740;
+      --border-color: #2a2a40;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+
+      /* Typography */
+      --font-stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+
+      /* Spacing */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2rem;
+      --space-2xl: 3rem;
+
+      /* Borders */
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+
+      /* Transitions */
+      --transition-fast: 150ms ease;
+      --transition-normal: 300ms ease;
+      --transition-slow: 500ms ease;
+    }
+
+    /* ========================================================================
+       BASE STYLES
+       ======================================================================== */
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-stack);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Subtle animated background gradient */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at 20% 50%, rgba(79, 195, 247, 0.06) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 20%, rgba(179, 136, 255, 0.06) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ========================================================================
+       LAYOUT
+       ======================================================================== */
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: var(--space-lg);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ========================================================================
+       SCREEN MANAGEMENT — only one visible at a time
+       ======================================================================== */
+    .screen {
+      display: none;
+      animation: fadeIn var(--transition-normal) ease;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      70% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes correctFlash {
+      0% { box-shadow: 0 0 0 0 rgba(105, 240, 174, 0.6); }
+      70% { box-shadow: 0 0 0 16px rgba(105, 240, 174, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(105, 240, 174, 0); }
+    }
+
+    @keyframes incorrectFlash {
+      0% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.6); }
+      70% { box-shadow: 0 0 0 16px rgba(255, 82, 82, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0); }
+    }
+
+    @keyframes confetti {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(-80px) rotate(720deg); opacity: 0; }
+    }
+
+    /* ========================================================================
+       LANDING SCREEN
+       ======================================================================== */
+    .landing {
+      text-align: center;
+      padding-top: var(--space-2xl);
+    }
+
+    .landing__title {
+      font-size: clamp(2.5rem, 8vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: var(--space-sm);
+    }
+
+    .landing__subtitle {
+      font-size: clamp(1.1rem, 3vw, 1.4rem);
+      color: var(--text-secondary);
+      margin-bottom: var(--space-xl);
+      font-weight: 400;
+    }
+
+    .landing__instructions {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: var(--space-lg);
+      margin-bottom: var(--space-xl);
+      text-align: left;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    .landing__instructions p {
+      margin-bottom: var(--space-sm);
+    }
+
+    .landing__instructions p:last-child {
+      margin-bottom: 0;
+    }
+
+    .landing__footer {
+      margin-top: var(--space-2xl);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      line-height: 1.6;
+    }
+
+    .landing__footer a {
+      color: var(--accent-blue);
+      text-decoration: none;
+      transition: color var(--transition-fast);
+    }
+
+    .landing__footer a:hover {
+      color: var(--accent-purple);
+      text-decoration: underline;
+    }
+
+    /* ========================================================================
+       BUTTONS
+       ======================================================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      padding: var(--space-md) var(--space-xl);
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: var(--font-stack);
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      text-decoration: none;
+      line-height: 1;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn--primary {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      color: #fff;
+      font-size: 1.2rem;
+      padding: var(--space-lg) var(--space-2xl);
+      box-shadow: 0 4px 20px rgba(79, 195, 247, 0.3);
+    }
+
+    .btn--primary:hover {
+      box-shadow: 0 6px 28px rgba(79, 195, 247, 0.45);
+      transform: translateY(-2px);
+    }
+
+    .btn--ai,
+    .btn--real {
+      flex: 1;
+      padding: var(--space-lg) var(--space-md);
+      font-size: 1.1rem;
+      border-radius: var(--radius-md);
+      border: 2px solid transparent;
+    }
+
+    .btn--ai {
+      background: var(--bg-secondary);
+      color: var(--accent-purple);
+      border-color: var(--accent-purple);
+    }
+
+    .btn--ai:hover {
+      background: rgba(179, 136, 255, 0.15);
+      box-shadow: 0 0 20px rgba(179, 136, 255, 0.2);
+    }
+
+    .btn--real {
+      background: var(--bg-secondary);
+      color: var(--accent-blue);
+      border-color: var(--accent-blue);
+    }
+
+    .btn--real:hover {
+      background: rgba(79, 195, 247, 0.15);
+      box-shadow: 0 0 20px rgba(79, 195, 247, 0.2);
+    }
+
+    .btn--ai:disabled,
+    .btn--real:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn--next {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      width: 100%;
+      margin-top: var(--space-md);
+    }
+
+    .btn--next:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent-blue);
+    }
+
+    .btn--secondary {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn--secondary:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent-blue);
+    }
+
+    /* ========================================================================
+       GAME SCREEN
+       ======================================================================== */
+
+    /* Progress bar */
+    .game__progress {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-lg);
+    }
+
+    .game__progress-text {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .game__progress-bar {
+      flex: 1;
+      height: 6px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-full);
+      margin-left: var(--space-md);
+      overflow: hidden;
+    }
+
+    .game__progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+      border-radius: var(--radius-full);
+      transition: width var(--transition-normal);
+    }
+
+    .game__score-tracker {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      white-space: nowrap;
+      margin-left: var(--space-md);
+    }
+
+    /* Media display */
+    .game__media-container {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: var(--space-lg);
+      transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+      position: relative;
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .game__media-container.correct {
+      border-color: var(--accent-green);
+      animation: correctFlash 0.6s ease;
+    }
+
+    .game__media-container.incorrect {
+      border-color: var(--accent-red);
+      animation: incorrectFlash 0.6s ease;
+    }
+
+    .game__media-container img {
+      width: 100%;
+      max-height: 500px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .game__media-container video {
+      width: 100%;
+      max-height: 500px;
+      display: block;
+    }
+
+    .game__media-loading {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      padding: var(--space-2xl);
+    }
+
+    /* Guess buttons */
+    .game__choices {
+      display: flex;
+      gap: var(--space-md);
+      margin-bottom: var(--space-md);
+    }
+
+    /* Feedback after guess */
+    .game__feedback {
+      display: none;
+      animation: slideUp var(--transition-normal) ease;
+    }
+
+    .game__feedback.visible {
+      display: block;
+    }
+
+    .game__feedback-banner {
+      padding: var(--space-md) var(--space-lg);
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: var(--space-md);
+      text-align: center;
+    }
+
+    .game__feedback-banner.correct {
+      background: rgba(105, 240, 174, 0.12);
+      color: var(--accent-green);
+      border: 1px solid rgba(105, 240, 174, 0.3);
+    }
+
+    .game__feedback-banner.incorrect {
+      background: rgba(255, 82, 82, 0.12);
+      color: var(--accent-red);
+      border: 1px solid rgba(255, 82, 82, 0.3);
+    }
+
+    .game__explanation {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: var(--space-md) var(--space-lg);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-bottom: var(--space-md);
+    }
+
+    .game__explanation strong {
+      color: var(--text-primary);
+    }
+
+    /* Reasoning input (collapsible) */
+    .game__reasoning {
+      margin-bottom: var(--space-md);
+    }
+
+    .game__reasoning-toggle {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: var(--font-stack);
+      font-size: 0.85rem;
+      cursor: pointer;
+      padding: var(--space-xs) 0;
+      transition: color var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+
+    .game__reasoning-toggle:hover {
+      color: var(--text-secondary);
+    }
+
+    .game__reasoning-toggle .arrow {
+      transition: transform var(--transition-fast);
+      font-size: 0.7rem;
+    }
+
+    .game__reasoning-toggle.open .arrow {
+      transform: rotate(90deg);
+    }
+
+    .game__reasoning-input {
+      display: none;
+      margin-top: var(--space-sm);
+    }
+
+    .game__reasoning-input.visible {
+      display: block;
+      animation: slideUp var(--transition-fast) ease;
+    }
+
+    .game__reasoning-input textarea {
+      width: 100%;
+      min-height: 60px;
+      padding: var(--space-sm) var(--space-md);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: var(--font-stack);
+      font-size: 0.9rem;
+      resize: vertical;
+      transition: border-color var(--transition-fast);
+    }
+
+    .game__reasoning-input textarea:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+    }
+
+    .game__reasoning-input textarea::placeholder {
+      color: var(--text-muted);
+    }
+
+    /* ========================================================================
+       RESULTS SCREEN
+       ======================================================================== */
+    .results {
+      text-align: center;
+    }
+
+    .results__score-container {
+      margin: var(--space-xl) 0;
+      animation: popIn var(--transition-slow) ease;
+    }
+
+    .results__score-number {
+      font-size: clamp(3rem, 10vw, 5rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1;
+    }
+
+    .results__score-label {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-top: var(--space-xs);
+    }
+
+    .results__interpretation {
+      font-size: 1.2rem;
+      color: var(--accent-yellow);
+      font-weight: 600;
+      margin: var(--space-md) 0;
+    }
+
+    .results__percentile {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: var(--space-md) var(--space-lg);
+      margin: var(--space-lg) 0;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    .results__percentile strong {
+      color: var(--accent-blue);
+    }
+
+    /* Score distribution chart */
+    .results__chart-section {
+      margin: var(--space-xl) 0;
+      text-align: left;
+    }
+
+    .results__chart-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--space-md);
+      text-align: center;
+    }
+
+    .results__chart-container {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+    }
+
+    .results__chart-container canvas {
+      width: 100%;
+      height: 200px;
+    }
+
+    /* Item breakdown */
+    .results__breakdown {
+      margin: var(--space-xl) 0;
+      text-align: left;
+    }
+
+    .results__breakdown-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--space-md);
+      text-align: center;
+    }
+
+    .results__item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: var(--space-sm) var(--space-md);
+      margin-bottom: var(--space-sm);
+      transition: background var(--transition-fast);
+    }
+
+    .results__item:hover {
+      background: var(--bg-hover);
+    }
+
+    .results__item-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--bg-primary);
+    }
+
+    .results__item-info {
+      flex: 1;
+      min-width: 0;
+      text-align: left;
+    }
+
+    .results__item-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .results__item-answer {
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .results__item-difficulty {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .results__item-icon {
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+
+    /* Action buttons on results screen */
+    .results__actions {
+      display: flex;
+      gap: var(--space-md);
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: var(--space-xl);
+    }
+
+    .results__actions .btn {
+      flex: 1;
+      min-width: 160px;
+      max-width: 240px;
+    }
+
+    /* Share toast */
+    .toast {
+      position: fixed;
+      bottom: var(--space-xl);
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--accent-green);
+      border-radius: var(--radius-md);
+      padding: var(--space-sm) var(--space-lg);
+      font-size: 0.9rem;
+      z-index: 100;
+      transition: transform var(--transition-normal);
+      pointer-events: none;
+    }
+
+    .toast.visible {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ========================================================================
+       ERROR STATE
+       ======================================================================== */
+    .error-screen {
+      text-align: center;
+      padding-top: var(--space-2xl);
+    }
+
+    .error-screen__icon {
+      font-size: 3rem;
+      margin-bottom: var(--space-md);
+    }
+
+    .error-screen__title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--accent-red);
+      margin-bottom: var(--space-md);
+    }
+
+    .error-screen__message {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ========================================================================
+       LOADING SPINNER
+       ======================================================================== */
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--accent-blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: var(--space-lg) auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ========================================================================
+       RESPONSIVE
+       ======================================================================== */
+    @media (max-width: 480px) {
+      .container {
+        padding: var(--space-md);
+      }
+
+      .game__choices {
+        flex-direction: column;
+      }
+
+      .btn--ai, .btn--real {
+        font-size: 1rem;
+        padding: var(--space-md);
+      }
+
+      .results__item {
+        padding: var(--space-sm);
+        gap: var(--space-sm);
+      }
+
+      .results__item-thumb {
+        width: 36px;
+        height: 36px;
+      }
+
+      .results__actions {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .results__actions .btn {
+        max-width: 100%;
+      }
+    }
+
+    /* ========================================================================
+       ACCESSIBILITY — reduce motion for users who prefer it
+       ======================================================================== */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- ================================================================
+         LANDING SCREEN
+         ================================================================ -->
+    <div id="screen-landing" class="screen landing active">
+      <h1 class="landing__title">AI or Not?</h1>
+      <p class="landing__subtitle">Can you tell what's real?</p>
+
+      <div class="landing__instructions">
+        <p>You'll see 10 images or videos. For each one, decide: was it created by AI, or is it a real photo/video?</p>
+        <p>After you guess, you'll learn the truth and why it matters. See how you stack up against other players at the end!</p>
+      </div>
+
+      <button class="btn btn--primary" id="btn-start">Start Game</button>
+
+      <div class="landing__footer">
+        <p>Part of the Scouting America AI Merit Badge</p>
+        <p><a href="https://github.com/brockwebb/ai-or-not" target="_blank" rel="noopener">github.com/brockwebb/ai-or-not</a></p>
+      </div>
+    </div>
+
+    <!-- ================================================================
+         GAME SCREEN
+         ================================================================ -->
+    <div id="screen-game" class="screen">
+      <!-- Progress -->
+      <div class="game__progress">
+        <span class="game__progress-text" id="progress-text">1 of 10</span>
+        <div class="game__progress-bar">
+          <div class="game__progress-fill" id="progress-fill" style="width: 10%"></div>
+        </div>
+        <span class="game__score-tracker" id="score-tracker">Score: 0</span>
+      </div>
+
+      <!-- Media -->
+      <div class="game__media-container" id="media-container">
+        <span class="game__media-loading" id="media-loading">Loading...</span>
+      </div>
+
+      <!-- Guess buttons -->
+      <div class="game__choices" id="choices">
+        <button class="btn btn--ai" id="btn-ai" onclick="handleGuess(true)">&#x1F916; AI Generated</button>
+        <button class="btn btn--real" id="btn-real" onclick="handleGuess(false)">&#x1F4F7; Real</button>
+      </div>
+
+      <!-- Reasoning (collapsible, shown before guess) -->
+      <div class="game__reasoning" id="reasoning-section">
+        <button class="game__reasoning-toggle" id="reasoning-toggle" onclick="toggleReasoning()">
+          <span class="arrow">&#x25B6;</span> Why do you think so? (optional)
+        </button>
+        <div class="game__reasoning-input" id="reasoning-input">
+          <textarea id="reasoning-text" placeholder="What clues do you see?" maxlength="500"></textarea>
+        </div>
+      </div>
+
+      <!-- Feedback (shown after guess) -->
+      <div class="game__feedback" id="feedback">
+        <div class="game__feedback-banner" id="feedback-banner"></div>
+        <div class="game__explanation" id="explanation"></div>
+        <button class="btn btn--next" id="btn-next" onclick="nextItem()">Next &#x2192;</button>
+      </div>
+    </div>
+
+    <!-- ================================================================
+         RESULTS SCREEN
+         ================================================================ -->
+    <div id="screen-results" class="screen results">
+      <h2 style="color: var(--text-secondary); font-weight: 400; font-size: 1rem; margin-top: var(--space-lg);">Game Over!</h2>
+
+      <div class="results__score-container">
+        <div class="results__score-number" id="results-score">0 / 10</div>
+        <div class="results__score-label">correct answers</div>
+      </div>
+
+      <div class="results__interpretation" id="results-interpretation"></div>
+
+      <div class="results__percentile" id="results-percentile" style="display: none;"></div>
+
+      <!-- Score distribution chart -->
+      <div class="results__chart-section" id="chart-section" style="display: none;">
+        <div class="results__chart-title">Score Distribution</div>
+        <div class="results__chart-container">
+          <canvas id="chart-canvas" width="600" height="200"></canvas>
+        </div>
+      </div>
+
+      <!-- Item breakdown -->
+      <div class="results__breakdown">
+        <div class="results__breakdown-title">Your Answers</div>
+        <div id="results-breakdown"></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="results__actions">
+        <button class="btn btn--primary" onclick="playAgain()">Play Again</button>
+        <button class="btn btn--secondary" onclick="shareScore()">Share Score</button>
+      </div>
+    </div>
+
+    <!-- ================================================================
+         ERROR SCREEN
+         ================================================================ -->
+    <div id="screen-error" class="screen error-screen">
+      <div class="error-screen__icon">&#x26A0;&#xFE0F;</div>
+      <div class="error-screen__title" id="error-title">Something went wrong</div>
+      <div class="error-screen__message" id="error-message"></div>
+    </div>
+
+  </div>
+
+  <!-- Toast for copy confirmation -->
+  <div class="toast" id="toast">Copied to clipboard!</div>
+
+  <!-- Config must be loaded before game logic -->
+  <script src="config.js"></script>
+
+  <script>
+    // =====================================================================
+    // AI or Not? — Game Logic
+    // =====================================================================
+    // All game state is held in plain JS objects. No localStorage, no cookies.
+    // The game works fully offline if CONFIG.APPS_SCRIPT_URL is empty.
+    // =====================================================================
+
+    // ---- Game State ----
+    const state = {
+      sessionId: generateUUID(),
+      contentLibrary: [],    // all items from content.json
+      sessionItems: [],      // items selected for this session
+      currentIndex: 0,       // which item we're on (0-based)
+      score: 0,
+      results: [],           // per-item: { item_id, guess, correct, reasoning }
+      aggregateStats: null,  // from backend, if available
+      hasGuessed: false      // whether current item has been guessed
+    };
+
+    // ---- UUID v4 Generator ----
+    // Generates a random UUID for session tracking. No crypto dependency needed
+    // for this use case — collision probability is negligible for analytics.
+    function generateUUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0;
+        var v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    // ---- Screen Navigation ----
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(function(s) {
+        s.classList.remove('active');
+      });
+      document.getElementById(screenId).classList.add('active');
+      // Scroll to top when switching screens
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showError(title, message) {
+      document.getElementById('error-title').textContent = title;
+      document.getElementById('error-message').innerHTML = message;
+      showScreen('screen-error');
+    }
+
+    // ---- Content Loading ----
+    async function loadContent() {
+      try {
+        var response = await fetch(CONFIG.CONTENT_URL);
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
+        var data = await response.json();
+
+        // content.json can be an array or { items: [...] }
+        var items = Array.isArray(data) ? data : data.items;
+        if (!items || !Array.isArray(items)) {
+          throw new Error('Invalid content.json format');
+        }
+
+        state.contentLibrary = items;
+      } catch (err) {
+        showError(
+          'Could not load content',
+          'Failed to fetch <code>' + CONFIG.CONTENT_URL + '</code>.<br><br>' +
+          'If you\'re running locally via <code>file://</code>, some browsers block fetch. ' +
+          'Try using a simple local server:<br><code>python3 -m http.server 8000</code><br><br>' +
+          'Error: ' + err.message
+        );
+        throw err; // stop initialization
+      }
+    }
+
+    // ---- Item Selection ----
+    // Fisher-Yates shuffle, then take the first N items.
+    function selectSessionItems() {
+      var pool = state.contentLibrary.slice(); // shallow copy
+      var needed = CONFIG.ITEMS_PER_SESSION;
+
+      if (pool.length < needed) {
+        showError(
+          'Not enough content',
+          'Not enough content loaded. Add items to <code>content.json</code> to play!<br><br>' +
+          'Found ' + pool.length + ' items, need at least ' + needed + '.'
+        );
+        return false;
+      }
+
+      // Fisher-Yates shuffle
+      for (var i = pool.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = pool[i];
+        pool[i] = pool[j];
+        pool[j] = temp;
+      }
+
+      state.sessionItems = pool.slice(0, needed);
+      return true;
+    }
+
+    // ---- Preload Images ----
+    // Preloads the next image so transitions feel instant.
+    function preloadNextImage() {
+      var nextIndex = state.currentIndex + 1;
+      if (nextIndex < state.sessionItems.length) {
+        var nextItem = state.sessionItems[nextIndex];
+        if (nextItem.media_type === 'image') {
+          var img = new Image();
+          img.src = nextItem.url;
+        }
+      }
+    }
+
+    // ---- Display Current Item ----
+    function displayCurrentItem() {
+      var item = state.sessionItems[state.currentIndex];
+      var container = document.getElementById('media-container');
+      var loading = document.getElementById('media-loading');
+
+      // Reset UI state
+      state.hasGuessed = false;
+      document.getElementById('btn-ai').disabled = false;
+      document.getElementById('btn-real').disabled = false;
+      document.getElementById('choices').style.display = 'flex';
+      document.getElementById('feedback').classList.remove('visible');
+      document.getElementById('reasoning-section').style.display = 'block';
+      document.getElementById('reasoning-text').value = '';
+      document.getElementById('reasoning-input').classList.remove('visible');
+      document.getElementById('reasoning-toggle').classList.remove('open');
+      container.classList.remove('correct', 'incorrect');
+
+      // Update progress
+      var current = state.currentIndex + 1;
+      var total = state.sessionItems.length;
+      document.getElementById('progress-text').textContent = current + ' of ' + total;
+      document.getElementById('progress-fill').style.width = (current / total * 100) + '%';
+      document.getElementById('score-tracker').textContent = 'Score: ' + state.score;
+
+      // Render media
+      loading.style.display = 'block';
+
+      // Clear previous media (but keep loading indicator)
+      var oldMedia = container.querySelector('img, video');
+      if (oldMedia) {
+        container.removeChild(oldMedia);
+      }
+
+      if (item.media_type === 'video') {
+        var video = document.createElement('video');
+        video.src = item.url;
+        video.controls = true;
+        video.autoplay = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.setAttribute('playsinline', '');
+        video.onloadeddata = function() {
+          loading.style.display = 'none';
+        };
+        video.onerror = function() {
+          loading.textContent = 'Video failed to load';
+        };
+        container.appendChild(video);
+      } else {
+        // Default to image
+        var img = document.createElement('img');
+        img.alt = 'Item ' + current + ' of ' + total + ' — is this AI generated or real?';
+        img.onload = function() {
+          loading.style.display = 'none';
+        };
+        img.onerror = function() {
+          loading.textContent = 'Image failed to load';
+        };
+        img.src = item.url;
+        container.appendChild(img);
+      }
+
+      // Preload next item's image
+      preloadNextImage();
+    }
+
+    // ---- Handle Guess ----
+    function handleGuess(guessedAI) {
+      if (state.hasGuessed) return;
+      state.hasGuessed = true;
+
+      var item = state.sessionItems[state.currentIndex];
+      var isCorrect = (guessedAI === item.is_ai);
+
+      if (isCorrect) {
+        state.score++;
+      }
+
+      // Record result
+      state.results.push({
+        item_id: item.id,
+        guess: guessedAI,
+        correct: isCorrect,
+        reasoning: document.getElementById('reasoning-text').value.trim()
+      });
+
+      // Disable guess buttons
+      document.getElementById('btn-ai').disabled = true;
+      document.getElementById('btn-real').disabled = true;
+
+      // Visual feedback on media container
+      var container = document.getElementById('media-container');
+      container.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+      // Show feedback
+      var banner = document.getElementById('feedback-banner');
+      banner.className = 'game__feedback-banner ' + (isCorrect ? 'correct' : 'incorrect');
+
+      if (isCorrect) {
+        banner.textContent = 'Correct!';
+      } else {
+        banner.textContent = 'Not quite!';
+      }
+
+      // Show explanation
+      var explanationEl = document.getElementById('explanation');
+      var truthLabel = item.is_ai ? 'AI Generated' : 'Real';
+      var explanationText = item.explanation || 'No explanation available for this item.';
+      explanationEl.innerHTML = '<strong>This is: ' + truthLabel + '</strong><br>' + escapeHtml(explanationText);
+
+      // Update score tracker
+      document.getElementById('score-tracker').textContent = 'Score: ' + state.score;
+
+      // Hide reasoning section, show feedback
+      document.getElementById('reasoning-section').style.display = 'none';
+      document.getElementById('feedback').classList.add('visible');
+
+      // Change "Next" text on last item
+      if (state.currentIndex >= state.sessionItems.length - 1) {
+        document.getElementById('btn-next').textContent = 'See Results';
+      }
+    }
+
+    // ---- Next Item ----
+    function nextItem() {
+      state.currentIndex++;
+
+      if (state.currentIndex >= state.sessionItems.length) {
+        // Game over — show results
+        finishGame();
+      } else {
+        displayCurrentItem();
+      }
+    }
+
+    // ---- Reasoning Toggle ----
+    function toggleReasoning() {
+      var toggle = document.getElementById('reasoning-toggle');
+      var input = document.getElementById('reasoning-input');
+
+      if (input.classList.contains('visible')) {
+        input.classList.remove('visible');
+        toggle.classList.remove('open');
+      } else {
+        input.classList.add('visible');
+        toggle.classList.add('open');
+        document.getElementById('reasoning-text').focus();
+      }
+    }
+
+    // ---- Finish Game ----
+    async function finishGame() {
+      showScreen('screen-results');
+
+      var total = state.sessionItems.length;
+
+      // Display score
+      document.getElementById('results-score').textContent = state.score + ' / ' + total;
+
+      // Interpretation text — encouraging at every level
+      var interpretation = getInterpretation(state.score, total);
+      document.getElementById('results-interpretation').textContent = interpretation;
+
+      // Build item breakdown
+      buildBreakdown();
+
+      // Post session data and get aggregate stats (if backend configured)
+      if (CONFIG.APPS_SCRIPT_URL) {
+        await submitAndFetchStats();
+      } else {
+        // Offline mode — show a message instead of percentile
+        var percentileEl = document.getElementById('results-percentile');
+        percentileEl.style.display = 'block';
+        percentileEl.innerHTML = 'Be the first to set the curve! Connect a backend to see how you compare.';
+      }
+    }
+
+    // ---- Interpretation Text ----
+    function getInterpretation(score, total) {
+      var pct = score / total;
+
+      if (pct <= 0.3) {
+        return 'AI is getting really good at fooling people! Keep practicing and you\'ll sharpen your eye.';
+      } else if (pct <= 0.5) {
+        return 'Not bad! You\'re starting to spot the clues. The more you look, the better you\'ll get.';
+      } else if (pct <= 0.6) {
+        return 'Solid work! You\'ve got a decent sense for what\'s real and what\'s not.';
+      } else if (pct <= 0.8) {
+        return 'Great job! You\'ve got sharp eyes. AI has a hard time fooling you.';
+      } else if (pct < 1.0) {
+        return 'Impressive! You\'re a deepfake detective. Very few clues get past you.';
+      } else {
+        return 'Perfect score! You\'re an AI detection expert. Nothing gets past you!';
+      }
+    }
+
+    // ---- Build Item Breakdown ----
+    function buildBreakdown() {
+      var container = document.getElementById('results-breakdown');
+      container.innerHTML = '';
+
+      state.sessionItems.forEach(function(item, i) {
+        var result = state.results[i];
+        if (!result) return;
+
+        var div = document.createElement('div');
+        div.className = 'results__item';
+
+        // Thumbnail
+        var thumb = document.createElement('img');
+        thumb.className = 'results__item-thumb';
+        thumb.alt = '';
+        if (item.media_type === 'video') {
+          // For videos, show a placeholder
+          thumb.src = 'data:image/svg+xml,' + encodeURIComponent(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">' +
+            '<rect width="48" height="48" fill="%231a1a2e"/>' +
+            '<polygon points="18,12 18,36 38,24" fill="%234fc3f7"/></svg>'
+          );
+        } else {
+          thumb.src = item.url;
+        }
+
+        // Info
+        var info = document.createElement('div');
+        info.className = 'results__item-info';
+
+        var label = document.createElement('div');
+        label.className = 'results__item-label';
+        label.textContent = 'Item ' + (i + 1);
+
+        var answer = document.createElement('div');
+        answer.className = 'results__item-answer';
+        var truthLabel = item.is_ai ? 'AI Generated' : 'Real';
+        var guessLabel = result.guess ? 'AI' : 'Real';
+        answer.textContent = 'Truth: ' + truthLabel + ' — You said: ' + guessLabel;
+        answer.style.color = result.correct ? 'var(--accent-green)' : 'var(--accent-red)';
+
+        // Difficulty — show prior_difficulty if available
+        var difficulty = document.createElement('div');
+        difficulty.className = 'results__item-difficulty';
+        if (typeof item.prior_difficulty === 'number') {
+          difficulty.textContent = 'Difficulty: ' + Math.round(item.prior_difficulty * 100) + '% find this tricky';
+        }
+
+        info.appendChild(label);
+        info.appendChild(answer);
+        info.appendChild(difficulty);
+
+        // Icon
+        var icon = document.createElement('span');
+        icon.className = 'results__item-icon';
+        icon.textContent = result.correct ? '\u2705' : '\u274C';
+
+        div.appendChild(thumb);
+        div.appendChild(info);
+        div.appendChild(icon);
+        container.appendChild(div);
+      });
+    }
+
+    // ---- Submit Session & Fetch Aggregate Stats ----
+    async function submitAndFetchStats() {
+      var payload = {
+        session_id: state.sessionId,
+        timestamp: new Date().toISOString(),
+        items: state.results,
+        score: state.score,
+        total: state.sessionItems.length
+      };
+
+      try {
+        // POST session data
+        var postResponse = await fetch(CONFIG.APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          mode: 'no-cors' // Apps Script may need this
+        });
+
+        // GET aggregate stats
+        var getResponse = await fetch(CONFIG.APPS_SCRIPT_URL + '?action=stats', {
+          method: 'GET'
+        });
+
+        if (getResponse.ok) {
+          state.aggregateStats = await getResponse.json();
+          displayAggregateStats();
+        } else {
+          showOfflinePercentile();
+        }
+      } catch (err) {
+        // Backend failure — graceful degradation to offline mode
+        console.warn('Backend unavailable, showing offline results:', err.message);
+        showOfflinePercentile();
+      }
+    }
+
+    // ---- Display Aggregate Stats ----
+    function displayAggregateStats() {
+      var stats = state.aggregateStats;
+      if (!stats) {
+        showOfflinePercentile();
+        return;
+      }
+
+      // Percentile
+      var percentileEl = document.getElementById('results-percentile');
+      if (typeof stats.percentile === 'number') {
+        percentileEl.style.display = 'block';
+        percentileEl.innerHTML = 'You beat <strong>' + Math.round(stats.percentile) + '%</strong> of players!';
+      } else {
+        showOfflinePercentile();
+      }
+
+      // Score distribution chart
+      if (stats.distribution && Array.isArray(stats.distribution)) {
+        drawDistributionChart(stats.distribution);
+      }
+
+      // Update item breakdown with observed difficulty if available
+      if (stats.item_stats) {
+        updateItemDifficulty(stats.item_stats);
+      }
+    }
+
+    function showOfflinePercentile() {
+      var percentileEl = document.getElementById('results-percentile');
+      percentileEl.style.display = 'block';
+      percentileEl.innerHTML = 'Be the first to set the curve! Connect a backend to see how you compare.';
+    }
+
+    // ---- Draw Score Distribution Bar Chart (Canvas, no library) ----
+    function drawDistributionChart(distribution) {
+      // distribution: array of 11 values (index 0-10), each is count of sessions with that score
+      var section = document.getElementById('chart-section');
+      section.style.display = 'block';
+
+      var canvas = document.getElementById('chart-canvas');
+      var ctx = canvas.getContext('2d');
+
+      // Use device pixel ratio for sharp rendering
+      var dpr = window.devicePixelRatio || 1;
+      var rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+
+      var w = rect.width;
+      var h = rect.height;
+      var padding = { top: 20, right: 20, bottom: 30, left: 40 };
+      var chartW = w - padding.left - padding.right;
+      var chartH = h - padding.top - padding.bottom;
+
+      var maxVal = Math.max.apply(null, distribution.concat([1])); // avoid divide by zero
+      var barCount = distribution.length;
+      var barWidth = (chartW / barCount) * 0.7;
+      var barGap = (chartW / barCount) * 0.3;
+
+      // Clear
+      ctx.clearRect(0, 0, w, h);
+
+      // Draw bars
+      distribution.forEach(function(count, i) {
+        var barH = (count / maxVal) * chartH;
+        var x = padding.left + i * (chartW / barCount) + barGap / 2;
+        var y = padding.top + chartH - barH;
+
+        // Highlight the player's score
+        if (i === state.score) {
+          ctx.fillStyle = '#b388ff';
+        } else {
+          ctx.fillStyle = '#4fc3f7';
+        }
+
+        // Rounded top corners via path
+        var r = Math.min(3, barWidth / 2);
+        ctx.beginPath();
+        ctx.moveTo(x, y + r);
+        ctx.arcTo(x, y, x + barWidth, y, r);
+        ctx.arcTo(x + barWidth, y, x + barWidth, y + barH, r);
+        ctx.lineTo(x + barWidth, y + barH);
+        ctx.lineTo(x, y + barH);
+        ctx.closePath();
+        ctx.fill();
+
+        // X-axis label
+        ctx.fillStyle = '#6a6a80';
+        ctx.font = '11px ' + getComputedStyle(document.body).fontFamily;
+        ctx.textAlign = 'center';
+        ctx.fillText(String(i), x + barWidth / 2, h - 8);
+      });
+
+      // Y-axis label
+      ctx.fillStyle = '#6a6a80';
+      ctx.font = '11px ' + getComputedStyle(document.body).fontFamily;
+      ctx.textAlign = 'right';
+      ctx.fillText(String(maxVal), padding.left - 8, padding.top + 10);
+      ctx.fillText('0', padding.left - 8, padding.top + chartH + 4);
+    }
+
+    // ---- Update Breakdown Items with Observed Difficulty ----
+    function updateItemDifficulty(itemStats) {
+      // itemStats: object keyed by item_id, value has { pct_wrong }
+      var items = document.querySelectorAll('.results__item');
+      items.forEach(function(el, i) {
+        if (i >= state.sessionItems.length) return;
+        var item = state.sessionItems[i];
+        var stats = itemStats[item.id];
+        if (stats && typeof stats.pct_wrong === 'number') {
+          var diffEl = el.querySelector('.results__item-difficulty');
+          if (diffEl) {
+            diffEl.textContent = Math.round(stats.pct_wrong * 100) + '% of players got this wrong';
+          }
+        }
+      });
+    }
+
+    // ---- Play Again ----
+    function playAgain() {
+      // Reset state for a new session
+      state.sessionId = generateUUID();
+      state.sessionItems = [];
+      state.currentIndex = 0;
+      state.score = 0;
+      state.results = [];
+      state.aggregateStats = null;
+      state.hasGuessed = false;
+
+      // Reset UI elements that might be stale
+      document.getElementById('btn-next').textContent = 'Next \u2192';
+      document.getElementById('chart-section').style.display = 'none';
+      document.getElementById('results-percentile').style.display = 'none';
+
+      startGame();
+    }
+
+    // ---- Share Score ----
+    function shareScore() {
+      var total = state.sessionItems.length;
+      var text = 'I scored ' + state.score + '/' + total + ' on AI or Not? \u2014 Can you beat me?\n' +
+                 'Play at: https://brockwebb.github.io/ai-or-not/';
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+          showToast('Copied to clipboard!');
+        }).catch(function() {
+          fallbackCopy(text);
+        });
+      } else {
+        fallbackCopy(text);
+      }
+    }
+
+    function fallbackCopy(text) {
+      // Fallback for browsers without clipboard API
+      var textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast('Copied to clipboard!');
+      } catch (err) {
+        showToast('Could not copy — share this: ' + text);
+      }
+      document.body.removeChild(textarea);
+    }
+
+    function showToast(message) {
+      var toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('visible');
+      setTimeout(function() {
+        toast.classList.remove('visible');
+      }, 2500);
+    }
+
+    // ---- HTML Escaping ----
+    // Prevents XSS from content.json explanation fields.
+    function escapeHtml(str) {
+      var div = document.createElement('div');
+      div.appendChild(document.createTextNode(str));
+      return div.innerHTML;
+    }
+
+    // ---- Game Start ----
+    function startGame() {
+      if (!selectSessionItems()) return;
+      state.currentIndex = 0;
+      showScreen('screen-game');
+      displayCurrentItem();
+    }
+
+    // ---- Keyboard Shortcuts ----
+    // Let players use keyboard for faster play:
+    //   1 or A = AI Generated
+    //   2 or R = Real
+    //   Enter or Space = Next (when feedback is shown)
+    document.addEventListener('keydown', function(e) {
+      // Only respond on game screen
+      if (!document.getElementById('screen-game').classList.contains('active')) return;
+
+      if (!state.hasGuessed) {
+        if (e.key === '1' || e.key === 'a' || e.key === 'A') {
+          e.preventDefault();
+          handleGuess(true);
+        } else if (e.key === '2' || e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          handleGuess(false);
+        }
+      } else {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          nextItem();
+        }
+      }
+    });
+
+    // ---- Initialization ----
+    (async function init() {
+      try {
+        await loadContent();
+
+        // Wire up the start button
+        document.getElementById('btn-start').addEventListener('click', function() {
+          startGame();
+        });
+      } catch (err) {
+        // Error already shown by loadContent
+        console.error('Initialization failed:', err);
+      }
+    })();
+  </script>
+
+</body>
+</html>
