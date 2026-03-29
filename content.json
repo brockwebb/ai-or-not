@@ -114,7 +114,12 @@
       "category": "animal",
       "generation_method": "photograph",
       "prior_difficulty": 0.65,
-      "tags": ["jellyfish", "ocean", "animal", "translucent"]
+      "tags": [
+        "jellyfish",
+        "ocean",
+        "animal",
+        "translucent"
+      ]
     },
     {
       "id": "img-007",
@@ -128,7 +133,12 @@
       "category": "object",
       "generation_method": "photograph",
       "prior_difficulty": 0.45,
-      "tags": ["flower", "macro", "nature", "close-up"]
+      "tags": [
+        "flower",
+        "macro",
+        "nature",
+        "close-up"
+      ]
     },
     {
       "id": "img-008",
@@ -142,7 +152,12 @@
       "category": "landscape",
       "generation_method": "photograph",
       "prior_difficulty": 0.55,
-      "tags": ["storm", "weather", "dramatic", "clouds"]
+      "tags": [
+        "storm",
+        "weather",
+        "dramatic",
+        "clouds"
+      ]
     },
     {
       "id": "img-009",
@@ -182,6 +197,331 @@
         "mountains",
         "long-exposure"
       ]
+    },
+    {
+      "id": "vid-001",
+      "media_type": "video",
+      "is_ai": false,
+      "source": "Social media — Twitter/X",
+      "attribution": "Unknown creator, sourced from Twitter/X",
+      "license": "Unknown",
+      "explanation": "This is a real video of a bearded dragon sitting at a miniature dinner table with a bow tie, candle, wine bottle, and framed photos. The scene is an elaborate staged setup with a real reptile — notice the natural eye movements and textured scales that AI video models struggle to replicate convincingly.",
+      "category": "animal",
+      "generation_method": "camera",
+      "prior_difficulty": 0.3,
+      "tags": [
+        "bearded-dragon",
+        "reptile",
+        "dinner",
+        "funny",
+        "pet"
+      ],
+      "url": "assets/vid-001.mp4"
+    },
+    {
+      "id": "vid-002",
+      "media_type": "video",
+      "is_ai": true,
+      "source": "Social media — Twitter/X",
+      "attribution": "Unknown creator, sourced from Twitter/X",
+      "license": "Unknown",
+      "explanation": "This is an AI-generated video of a chihuahua jumping into a pool. It looks convincing at first glance, but watch the water interaction closely — the splash and ripples don't behave quite like real water physics. The dog's paddling motion is also slightly too smooth and repetitive compared to a real dog swimming.",
+      "category": "animal",
+      "generation_method": "unknown-ai",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "chihuahua",
+        "dog",
+        "pool",
+        "swimming",
+        "funny"
+      ],
+      "url": "assets/vid-002.mp4"
+    },
+    {
+      "id": "vid-003",
+      "media_type": "video",
+      "is_ai": true,
+      "source": "Social media — Twitter/X",
+      "attribution": "Unknown creator, sourced from Twitter/X",
+      "license": "Unknown",
+      "explanation": "This is an AI-generated video of a squirrel investigating a coffee mug. The scene looks natural with the backyard setting, but the squirrel's movements are subtly too fluid and the way it interacts with the mug edge doesn't show realistic physics. The liquid surface in the mug also lacks natural reflections.",
+      "category": "animal",
+      "generation_method": "unknown-ai",
+      "prior_difficulty": 0.4,
+      "tags": [
+        "squirrel",
+        "coffee",
+        "funny",
+        "wildlife",
+        "backyard"
+      ],
+      "url": "assets/vid-003.mp4"
+    },
+    {
+      "id": "vid-004",
+      "media_type": "video",
+      "is_ai": false,
+      "source": "Social media — Twitter/X",
+      "attribution": "Unknown creator, sourced from Twitter/X",
+      "license": "Unknown",
+      "explanation": "This is a real video of several toads or frogs on a purple mat reacting to a phone screen being shown to them. The natural skin textures, independent eye movements, and unpredictable animal reactions are very difficult for AI to replicate. The hand entering frame with natural motion confirms authenticity.",
+      "category": "animal",
+      "generation_method": "camera",
+      "prior_difficulty": 0.7,
+      "tags": [
+        "frogs",
+        "toads",
+        "reptiles",
+        "phone",
+        "funny"
+      ],
+      "url": "assets/vid-004.mp4"
+    },
+    {
+      "id": "vid-005",
+      "media_type": "video",
+      "is_ai": false,
+      "source": "Social media — Twitter/X",
+      "attribution": "Unknown creator, sourced from Twitter/X",
+      "license": "Unknown",
+      "explanation": "This is a real video of a fluffy black dog shaking or being playful indoors. The motion blur, natural fur physics, and casual phone-camera quality with a social media watermark are signs of authentic user-generated content. AI video still struggles with realistic fur movement during fast motion.",
+      "category": "animal",
+      "generation_method": "camera",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "dogs",
+        "funny",
+        "compilation",
+        "pets",
+        "shaking"
+      ],
+      "url": "assets/vid-005.mp4"
+    },
+    {
+      "id": "vid-006",
+      "media_type": "video",
+      "is_ai": true,
+      "source": "Social media — Twitter/X",
+      "attribution": "Unknown creator, sourced from Twitter/X",
+      "license": "Unknown",
+      "explanation": "This is an AI-generated video of a ram headbutting near wooden pallets. The animal's movement and the scene look plausible, but watch the interaction between the ram and the environment — the physics of impact and the wool texture have subtle inconsistencies that reveal it as AI-generated.",
+      "category": "animal",
+      "generation_method": "unknown-ai",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "goat",
+        "ram",
+        "funny",
+        "farm",
+        "headbutt"
+      ],
+      "url": "assets/vid-006.mp4"
+    },
+    {
+      "id": "vid-007",
+      "media_type": "video",
+      "is_ai": false,
+      "source": "Social media — Twitter/X",
+      "attribution": "Unknown creator, sourced from Twitter/X",
+      "license": "Unknown",
+      "explanation": "This is a real video of an Indian Ringneck parakeet standing on a couch. The bird's natural feather detail, realistic eye reflections, and the casual indoor phone-camera setting are all authentic. AI-generated birds typically have issues with feather layering and natural head movements.",
+      "category": "animal",
+      "generation_method": "camera",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "parrot",
+        "bird",
+        "talking",
+        "pet",
+        "cute"
+      ],
+      "url": "assets/vid-007.mp4"
+    },
+    {
+      "id": "vid-008",
+      "media_type": "video",
+      "is_ai": true,
+      "source": "Social media — Twitter/X",
+      "attribution": "Unknown creator, sourced from Twitter/X",
+      "license": "Unknown",
+      "explanation": "This is an AI-generated video of a kangaroo confronting a Halloween witch decoration. The nighttime setting helps hide imperfections, but the kangaroo's movement is slightly too smooth, and the lighting interaction between the animal and the decorations isn't quite physically consistent.",
+      "category": "animal",
+      "generation_method": "unknown-ai",
+      "prior_difficulty": 0.4,
+      "tags": [
+        "kangaroo",
+        "halloween",
+        "witch",
+        "decoration",
+        "funny"
+      ],
+      "url": "assets/vid-008.mp4"
+    },
+    {
+      "id": "vid-009",
+      "media_type": "video",
+      "is_ai": false,
+      "source": "Social media — Twitter/X",
+      "attribution": "Unknown creator, sourced from Twitter/X",
+      "license": "Unknown",
+      "explanation": "This is a real video showing a close-up of what appears to be a specialized tool or axe mechanism in a workshop. The natural hand movements, realistic metallic reflections, workshop clutter in the background, and consistent lighting are all signs of authentic footage.",
+      "category": "object",
+      "generation_method": "camera",
+      "prior_difficulty": 0.6,
+      "tags": [
+        "axe",
+        "tool",
+        "workshop",
+        "demonstration",
+        "engineering"
+      ],
+      "url": "assets/vid-009.mp4"
+    },
+    {
+      "id": "vid-010",
+      "media_type": "video",
+      "is_ai": false,
+      "source": "Social media — Twitter/X",
+      "attribution": "Unknown creator, sourced from Twitter/X",
+      "license": "Unknown",
+      "explanation": "This is a real video of a pit bull in a hoodie appearing to eat noodles with chopsticks (someone's hands are in the sleeves). The dog's natural facial expressions, realistic drool and noodle physics, and the kitchen setting are authentic. This could fool people because the staged setup looks almost too absurd to be real.",
+      "category": "animal",
+      "generation_method": "camera",
+      "prior_difficulty": 0.4,
+      "tags": [
+        "dog",
+        "pitbull",
+        "noodles",
+        "eating",
+        "funny",
+        "costume"
+      ],
+      "url": "assets/vid-010.mp4"
+    },
+    {
+      "id": "vid-011",
+      "media_type": "video",
+      "is_ai": false,
+      "source": "Social media — Twitter/X",
+      "attribution": "Unknown creator, sourced from Twitter/X",
+      "license": "Unknown",
+      "explanation": "This is a real video showing someone's hand near a Nintendo Entertainment System with a Super Mario Bros cartridge, a TV Guide magazine, bubble gum, and other 80s memorabilia. The authentic period details, natural hand movement, and real product labels with legible text are strong indicators of real footage.",
+      "category": "object",
+      "generation_method": "camera",
+      "prior_difficulty": 0.3,
+      "tags": [
+        "nintendo",
+        "retro",
+        "80s",
+        "nostalgia",
+        "gaming",
+        "vhs"
+      ],
+      "url": "assets/vid-011.mp4"
+    },
+    {
+      "id": "vid-012",
+      "media_type": "video",
+      "is_ai": false,
+      "source": "Social media — Twitter/X",
+      "attribution": "Unknown creator, sourced from Twitter/X",
+      "license": "Unknown",
+      "explanation": "This is a real video of a pet raccoon wearing a small green hoodie, sitting in a net hammock and holding a toothpick. The raccoon's natural fur texture, dexterous paw movements, and realistic eye reflections are unmistakably real. Social media watermark visible confirms user-generated content.",
+      "category": "animal",
+      "generation_method": "camera",
+      "prior_difficulty": 0.7,
+      "tags": [
+        "raccoon",
+        "pet",
+        "cute",
+        "hoodie",
+        "toothpick"
+      ],
+      "url": "assets/vid-012.mp4"
+    },
+    {
+      "id": "vid-013",
+      "media_type": "video",
+      "is_ai": true,
+      "source": "Social media — Twitter/X",
+      "attribution": "Unknown creator, sourced from Twitter/X",
+      "license": "Unknown",
+      "explanation": "This is an AI-generated video showing what appears to be a dog with a shaved head next to a child with clippers. The scene is designed to look like a funny home video, but the dog's facial features have subtle uncanny-valley artifacts, and the fur-to-skin transition on the shaved area doesn't look quite right.",
+      "category": "animal",
+      "generation_method": "unknown-ai",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "dog",
+        "grooming",
+        "shaved",
+        "funny",
+        "border-collie"
+      ],
+      "url": "assets/vid-013.mp4"
+    },
+    {
+      "id": "vid-014",
+      "media_type": "video",
+      "is_ai": false,
+      "source": "Social media — Twitter/X",
+      "attribution": "Unknown creator, sourced from Twitter/X",
+      "license": "Unknown",
+      "explanation": "This is a real video showing Chladni patterns — sand or sodium on a vibrating plate forming geometric patterns at different sound frequencies (4221 Hz shown). These patterns are a well-known physics demonstration. The symmetric but slightly imperfect patterns and the visible text overlay are authentic.",
+      "category": "scene",
+      "generation_method": "camera",
+      "prior_difficulty": 0.4,
+      "tags": [
+        "science",
+        "cymatics",
+        "sound",
+        "vibration",
+        "physics",
+        "sodium"
+      ],
+      "url": "assets/vid-014.mp4"
+    },
+    {
+      "id": "vid-015",
+      "media_type": "video",
+      "is_ai": false,
+      "source": "Social media — Twitter/X",
+      "attribution": "Unknown creator, sourced from Twitter/X",
+      "license": "Unknown",
+      "explanation": "This is a real stop-motion animation video of miniature food made from felt/wool. The finger placing a tiny felt ball into a miniature bowl shows real physical interaction. Stop-motion has a distinctive frame-by-frame quality that differs from both regular video and AI generation — each frame is a real photograph.",
+      "category": "object",
+      "generation_method": "camera",
+      "prior_difficulty": 0.7,
+      "tags": [
+        "stop-motion",
+        "felt",
+        "craft",
+        "miniature",
+        "food",
+        "art"
+      ],
+      "url": "assets/vid-015.mp4"
+    },
+    {
+      "id": "vid-016",
+      "media_type": "video",
+      "is_ai": false,
+      "source": "Social media — Twitter/X",
+      "attribution": "Unknown creator, sourced from Twitter/X",
+      "license": "Unknown",
+      "explanation": "This is a real video of a miniature model train diorama with autumn foliage, built inside a round wooden container. A hand is adjusting the controls. The incredible detail in the miniature trees and train cars is real craftsmanship, not AI — notice the consistent physical materials and the realistic motion of the train on tracks.",
+      "category": "object",
+      "generation_method": "camera",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "train",
+        "model",
+        "miniature",
+        "diorama",
+        "hobby",
+        "autumn"
+      ],
+      "url": "assets/vid-016.mp4"
     }
   ]
 }
