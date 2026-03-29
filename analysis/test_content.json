@@ -1,0 +1,291 @@
+[
+  {
+    "id": "img-001",
+    "url": "https://example.com/media/img-001.jpg",
+    "media_type": "image",
+    "is_ai": true,
+    "source": "synthetic-test-data",
+    "attribution": "Test data generator",
+    "license": "CC0",
+    "explanation": "AI-generated face with subtle asymmetry",
+    "category": "faces",
+    "generation_method": "stable-diffusion",
+    "prior_difficulty": 0.3,
+    "tags": [
+      "faces",
+      "stable-diffusion"
+    ]
+  },
+  {
+    "id": "img-002",
+    "url": "https://example.com/media/img-002.jpg",
+    "media_type": "image",
+    "is_ai": false,
+    "source": "synthetic-test-data",
+    "attribution": "Test data generator",
+    "license": "CC0",
+    "explanation": "Real photograph, natural lighting",
+    "category": "faces",
+    "generation_method": "real",
+    "prior_difficulty": 0.2,
+    "tags": [
+      "faces",
+      "real"
+    ]
+  },
+  {
+    "id": "img-003",
+    "url": "https://example.com/media/img-003.jpg",
+    "media_type": "image",
+    "is_ai": true,
+    "source": "synthetic-test-data",
+    "attribution": "Test data generator",
+    "license": "CC0",
+    "explanation": "AI landscape, very realistic rendering",
+    "category": "landscapes",
+    "generation_method": "midjourney",
+    "prior_difficulty": 0.7,
+    "tags": [
+      "landscapes",
+      "midjourney"
+    ]
+  },
+  {
+    "id": "img-004",
+    "url": "https://example.com/media/img-004.jpg",
+    "media_type": "image",
+    "is_ai": false,
+    "source": "synthetic-test-data",
+    "attribution": "Test data generator",
+    "license": "CC0",
+    "explanation": "Real landscape that looks surreal",
+    "category": "landscapes",
+    "generation_method": "real",
+    "prior_difficulty": 0.4,
+    "tags": [
+      "landscapes",
+      "real"
+    ]
+  },
+  {
+    "id": "img-005",
+    "url": "https://example.com/media/img-005.jpg",
+    "media_type": "image",
+    "is_ai": true,
+    "source": "synthetic-test-data",
+    "attribution": "Test data generator",
+    "license": "CC0",
+    "explanation": "AI-generated cat with extra toes",
+    "category": "animals",
+    "generation_method": "dall-e",
+    "prior_difficulty": 0.5,
+    "tags": [
+      "animals",
+      "dall-e"
+    ]
+  },
+  {
+    "id": "img-006",
+    "url": "https://example.com/media/img-006.jpg",
+    "media_type": "image",
+    "is_ai": false,
+    "source": "synthetic-test-data",
+    "attribution": "Test data generator",
+    "license": "CC0",
+    "explanation": "Real photo of a dog",
+    "category": "animals",
+    "generation_method": "real",
+    "prior_difficulty": 0.3,
+    "tags": [
+      "animals",
+      "real"
+    ]
+  },
+  {
+    "id": "img-007",
+    "url": "https://example.com/media/img-007.jpg",
+    "media_type": "image",
+    "is_ai": true,
+    "source": "synthetic-test-data",
+    "attribution": "Test data generator",
+    "license": "CC0",
+    "explanation": "AI image with garbled text on signs",
+    "category": "text",
+    "generation_method": "stable-diffusion",
+    "prior_difficulty": 0.2,
+    "tags": [
+      "text",
+      "stable-diffusion"
+    ]
+  },
+  {
+    "id": "img-008",
+    "url": "https://example.com/media/img-008.jpg",
+    "media_type": "image",
+    "is_ai": false,
+    "source": "synthetic-test-data",
+    "attribution": "Test data generator",
+    "license": "CC0",
+    "explanation": "Real photo with clear readable text",
+    "category": "text",
+    "generation_method": "real",
+    "prior_difficulty": 0.1,
+    "tags": [
+      "text",
+      "real"
+    ]
+  },
+  {
+    "id": "vid-001",
+    "url": "https://example.com/media/vid-001.jpg",
+    "media_type": "video",
+    "is_ai": true,
+    "source": "synthetic-test-data",
+    "attribution": "Test data generator",
+    "license": "CC0",
+    "explanation": "Deepfake video with slight lip-sync issues",
+    "category": "faces",
+    "generation_method": "deepfake",
+    "prior_difficulty": 0.6,
+    "tags": [
+      "faces",
+      "deepfake"
+    ]
+  },
+  {
+    "id": "vid-002",
+    "url": "https://example.com/media/vid-002.jpg",
+    "media_type": "video",
+    "is_ai": false,
+    "source": "synthetic-test-data",
+    "attribution": "Test data generator",
+    "license": "CC0",
+    "explanation": "Real video interview",
+    "category": "faces",
+    "generation_method": "real",
+    "prior_difficulty": 0.15,
+    "tags": [
+      "faces",
+      "real"
+    ]
+  },
+  {
+    "id": "img-009",
+    "url": "https://example.com/media/img-009.jpg",
+    "media_type": "image",
+    "is_ai": true,
+    "source": "synthetic-test-data",
+    "attribution": "Test data generator",
+    "license": "CC0",
+    "explanation": "AI image with six fingers",
+    "category": "hands",
+    "generation_method": "midjourney",
+    "prior_difficulty": 0.35,
+    "tags": [
+      "hands",
+      "midjourney"
+    ]
+  },
+  {
+    "id": "img-010",
+    "url": "https://example.com/media/img-010.jpg",
+    "media_type": "image",
+    "is_ai": true,
+    "source": "synthetic-test-data",
+    "attribution": "Test data generator",
+    "license": "CC0",
+    "explanation": "AI landscape nearly indistinguishable from real",
+    "category": "landscapes",
+    "generation_method": "dall-e",
+    "prior_difficulty": 0.8,
+    "tags": [
+      "landscapes",
+      "dall-e"
+    ]
+  },
+  {
+    "id": "img-011",
+    "url": "https://example.com/media/img-011.jpg",
+    "media_type": "image",
+    "is_ai": false,
+    "source": "synthetic-test-data",
+    "attribution": "Test data generator",
+    "license": "CC0",
+    "explanation": "Real photo of hands",
+    "category": "hands",
+    "generation_method": "real",
+    "prior_difficulty": 0.25,
+    "tags": [
+      "hands",
+      "real"
+    ]
+  },
+  {
+    "id": "img-012",
+    "url": "https://example.com/media/img-012.jpg",
+    "media_type": "image",
+    "is_ai": true,
+    "source": "synthetic-test-data",
+    "attribution": "Test data generator",
+    "license": "CC0",
+    "explanation": "AI face, photorealistic but earrings don't match",
+    "category": "faces",
+    "generation_method": "stable-diffusion",
+    "prior_difficulty": 0.55,
+    "tags": [
+      "faces",
+      "stable-diffusion"
+    ]
+  },
+  {
+    "id": "img-013",
+    "url": "https://example.com/media/img-013.jpg",
+    "media_type": "image",
+    "is_ai": false,
+    "source": "synthetic-test-data",
+    "attribution": "Test data generator",
+    "license": "CC0",
+    "explanation": "Real photo that looks AI-generated due to odd colors",
+    "category": "animals",
+    "generation_method": "real",
+    "prior_difficulty": 0.45,
+    "tags": [
+      "animals",
+      "real"
+    ]
+  },
+  {
+    "id": "img-014",
+    "url": "https://example.com/media/img-014.jpg",
+    "media_type": "image",
+    "is_ai": true,
+    "source": "synthetic-test-data",
+    "attribution": "Test data generator",
+    "license": "CC0",
+    "explanation": "AI image with nonsense text",
+    "category": "text",
+    "generation_method": "midjourney",
+    "prior_difficulty": 0.25,
+    "tags": [
+      "text",
+      "midjourney"
+    ]
+  },
+  {
+    "id": "img-015",
+    "url": "https://example.com/media/img-015.jpg",
+    "media_type": "image",
+    "is_ai": false,
+    "source": "synthetic-test-data",
+    "attribution": "Test data generator",
+    "license": "CC0",
+    "explanation": "HDR photograph that looks synthetic",
+    "category": "landscapes",
+    "generation_method": "real",
+    "prior_difficulty": 0.6,
+    "tags": [
+      "landscapes",
+      "real"
+    ]
+  }
+]
