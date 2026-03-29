@@ -1,0 +1,12 @@
+.env
+.DS_Store
+.claude/
+__pycache__/
+*.pyc
+node_modules/
+cc_tasks/
+handoffs/
+data/*.jsonl
+data/*.csv
+.vscode/
+*.egg-info/
