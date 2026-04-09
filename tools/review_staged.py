@@ -28,7 +28,7 @@ DIFFICULTY_GUIDE = """
   0.8-1.0  Very hard — almost everyone gets it wrong"""
 
 
-def find_pending_items(staged_dir: Path, include_all: bool = False) -> list[Path]:
+def find_pending_items(staged_dir: Path, include_all: bool = False, explanation_only: bool = False) -> list[Path]:
     """Return staged item directories filtered by review_status."""
     items = []
     if not staged_dir.exists():
@@ -39,10 +39,13 @@ def find_pending_items(staged_dir: Path, include_all: bool = False) -> list[Path
         meta_path = d / "metadata.json"
         if not meta_path.exists():
             continue
-        if include_all:
+        meta = json.loads(meta_path.read_text())
+        if explanation_only:
+            if meta.get("review_status") == "approved" and not meta.get("explanation"):
+                items.append(d)
+        elif include_all:
             items.append(d)
         else:
-            meta = json.loads(meta_path.read_text())
             if meta.get("review_status") == "pending":
                 items.append(d)
     return items
@@ -154,6 +157,32 @@ def prompt_field(field_name: str, current_val, meta: dict) -> any:
         return val
 
 
+def review_explanation(item_dir: Path, meta: dict) -> str:
+    """Prompt for explanation on an approved item missing one. Returns 'done' or 'skipped'."""
+    item_id = meta["id"]
+    is_ai_val = extract_value(meta.get("is_ai"))
+    ai_str = "AI" if is_ai_val else "Real"
+    category = extract_value(meta.get("category")) or "?"
+    source = extract_value(meta.get("source")) or "?"
+
+    print(f"\n{'─' * 50}")
+    print(f"  {item_id}  {ai_str}  {category}  {source}")
+    print(f"{'─' * 50}")
+
+    open_media(item_dir, meta)
+
+    print("  (shown to players after they guess)")
+    val = input("  explanation → ").strip()
+    if not val:
+        print(f"  → {item_id} skipped")
+        return "skipped"
+
+    meta["explanation"] = val
+    save_staged_metadata(item_dir, meta)
+    print(f"  ✓ {item_id} explanation saved")
+    return "done"
+
+
 def review_item(item_dir: Path, meta: dict) -> str:
     """Review a single staged item. Returns 'approved', 'skipped', or 'rejected'."""
     item_id = meta["id"]
@@ -223,10 +252,30 @@ def review_item(item_dir: Path, meta: dict) -> str:
 def main():
     parser = argparse.ArgumentParser(description="Review staged items interactively")
     parser.add_argument("--all", action="store_true", help="Show all items, not just pending")
+    parser.add_argument("--explanation-only", action="store_true",
+                        help="Only prompt for explanation on approved items that are missing one")
     args = parser.parse_args()
 
     project_root = Path(__file__).resolve().parent.parent
     staged_dir = project_root / "staged"
+
+    if args.explanation_only:
+        items = find_pending_items(staged_dir, explanation_only=True)
+        if not items:
+            print("No approved items missing explanations in staged/.")
+            return
+        print(f"Found {len(items)} approved item(s) missing explanations.\n")
+        done = 0
+        skipped = 0
+        for item_dir in items:
+            meta = load_staged_metadata(item_dir)
+            result = review_explanation(item_dir, meta)
+            if result == "done":
+                done += 1
+            else:
+                skipped += 1
+        print(f"\nDone: {done} explanation(s) added, {skipped} skipped.")
+        return
 
     items = find_pending_items(staged_dir, include_all=args.all)
     if not items:

@@ -46,6 +46,11 @@ function doPost(e) {
     return _corsResponse({ status: "error", message: "No POST body received." });
   }
 
+  // Payload size cap — reject obviously oversized requests (legit session ~1-2KB)
+  if (e.postData.contents.length > 10000) {
+    return _corsResponse({ status: "error", message: "Payload too large." });
+  }
+
   var payload;
   try {
     payload = JSON.parse(e.postData.contents);
@@ -59,11 +64,16 @@ function doPost(e) {
     return _corsResponse({ status: "error", message: "Missing fields: " + missing.join(", ") });
   }
 
+  // Validate session_id format — alphanumeric, hyphens, underscores, max 64 chars
+  if (typeof payload.session_id !== 'string' || payload.session_id.length > 64 || !/^[a-zA-Z0-9_-]+$/.test(payload.session_id)) {
+    return _corsResponse({ status: "error", message: "Invalid session_id format." });
+  }
+
   if (!Array.isArray(payload.items) || payload.items.length === 0) {
     return _corsResponse({ status: "error", message: "items must be a non-empty array." });
   }
 
-  // Validate each item has required sub-fields
+  // Validate each item has required sub-fields and a well-formed item_id
   for (var i = 0; i < payload.items.length; i++) {
     var item = payload.items[i];
     if (item.item_id === undefined || item.correct === undefined) {
@@ -72,6 +82,22 @@ function doPost(e) {
         message: "Each item must have item_id and correct. Problem at index " + i + "."
       });
     }
+    if (!/^(img|vid)-\d{3}$/.test(String(item.item_id))) {
+      return _corsResponse({
+        status: "error",
+        message: "Invalid item_id format: " + item.item_id
+      });
+    }
+  }
+
+  // Items array length must exactly match total
+  if (payload.items.length !== Number(payload.total)) {
+    return _corsResponse({ status: "error", message: "items array length must equal total." });
+  }
+
+  // total must equal MAX_SCORE (sessions are always exactly 10 items)
+  if (Number(payload.total) !== MAX_SCORE) {
+    return _corsResponse({ status: "error", message: "total must equal " + MAX_SCORE + "." });
   }
 
   // Validate score is a reasonable number
@@ -93,8 +119,20 @@ function doPost(e) {
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-    // 1. Append session row
+    // Reject duplicate session_ids — prevents replayed or double-submitted sessions
     var sessionsSheet = ss.getSheetByName(SHEET_SESSIONS);
+    var lastRow = sessionsSheet.getLastRow();
+    if (lastRow > 0) {
+      var existingIds = sessionsSheet.getRange(1, 1, lastRow, 1).getValues();
+      for (var r = 0; r < existingIds.length; r++) {
+        if (String(existingIds[r][0]) === String(payload.session_id)) {
+          lock.releaseLock();
+          return _corsResponse({ status: "error", message: "Duplicate session_id." });
+        }
+      }
+    }
+
+    // 1. Append session row
     sessionsSheet.appendRow([
       String(payload.session_id),
       String(payload.timestamp),

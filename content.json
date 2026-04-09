@@ -4,7 +4,7 @@
     "description": "AI or Not? Game Content Library",
     "license": "See individual item licenses",
     "curator": "brockwebb",
-    "last_updated": "2026-03-29"
+    "last_updated": "2026-04-09"
   },
   "items": [
     {
@@ -535,7 +535,12 @@
       "category": "object",
       "generation_method": "camera/stop-motion",
       "prior_difficulty": 0.25,
-      "tags": ["toy", "stop-motion", "funny", "holiday"],
+      "tags": [
+        "toy",
+        "stop-motion",
+        "funny",
+        "holiday"
+      ],
       "duration_seconds": 6,
       "resolution": "560x560"
     },
@@ -551,7 +556,12 @@
       "category": "animal",
       "generation_method": "camera",
       "prior_difficulty": 0.15,
-      "tags": ["bird", "dog", "pets", "funny"],
+      "tags": [
+        "bird",
+        "dog",
+        "pets",
+        "funny"
+      ],
       "duration_seconds": 35,
       "resolution": "720x720"
     },
@@ -567,7 +577,14 @@
       "category": "animal",
       "generation_method": "camera",
       "prior_difficulty": 0.85,
-      "tags": ["bird", "parrot", "underwater", "scuba", "surprising", "trick-item"],
+      "tags": [
+        "bird",
+        "parrot",
+        "underwater",
+        "scuba",
+        "surprising",
+        "trick-item"
+      ],
       "duration_seconds": 51,
       "resolution": "720x720"
     },
@@ -583,7 +600,12 @@
       "category": "animal",
       "generation_method": "unknown-video-gen",
       "prior_difficulty": 0.55,
-      "tags": ["eagle", "baby", "security-cam", "fake-authenticity"],
+      "tags": [
+        "eagle",
+        "baby",
+        "security-cam",
+        "fake-authenticity"
+      ],
       "duration_seconds": 10,
       "resolution": "720x1280"
     },
@@ -598,8 +620,14 @@
       "explanation": "This is real. Wolffish can maintain biting reflexes after decapitation due to their nervous system. The video shows commercial fishermen reacting to this. The gritty boat interior, clothing, and reactive human movements are all consistent with real footage.",
       "category": "animal",
       "generation_method": "camera",
-      "prior_difficulty": 0.60,
-      "tags": ["fish", "wolffish", "biology", "surprising", "fishing"],
+      "prior_difficulty": 0.6,
+      "tags": [
+        "fish",
+        "wolffish",
+        "biology",
+        "surprising",
+        "fishing"
+      ],
       "duration_seconds": 37,
       "resolution": "720x530"
     },
@@ -614,10 +642,719 @@
       "explanation": "This is real footage of a fisherman handling an octopus on a small boat. The ocean waves, boat motion, and octopus tentacle movements are all physically consistent with real-world behavior.",
       "category": "animal",
       "generation_method": "camera",
-      "prior_difficulty": 0.30,
-      "tags": ["octopus", "fishing", "ocean", "boat"],
+      "prior_difficulty": 0.3,
+      "tags": [
+        "octopus",
+        "fishing",
+        "ocean",
+        "boat"
+      ],
       "duration_seconds": 31,
       "resolution": "720x1280"
+    },
+    {
+      "id": "img-011",
+      "media_type": "image",
+      "is_ai": false,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-011.jpg"
+    },
+    {
+      "id": "img-012",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "unknown-ai-face-gen",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-012.jpg"
+    },
+    {
+      "id": "img-013",
+      "media_type": "image",
+      "is_ai": false,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-013.jpg"
+    },
+    {
+      "id": "img-014",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "unknown-ai-face-gen",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-014.jpg"
+    },
+    {
+      "id": "img-015",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "unknown-ai-face-gen",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-015.jpg"
+    },
+    {
+      "id": "img-016",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "unknown-ai-face-gen",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-016.jpg"
+    },
+    {
+      "id": "img-017",
+      "media_type": "image",
+      "is_ai": false,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-017.jpg"
+    },
+    {
+      "id": "img-018",
+      "media_type": "image",
+      "is_ai": false,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-018.jpg"
+    },
+    {
+      "id": "img-019",
+      "media_type": "image",
+      "is_ai": false,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-019.jpg"
+    },
+    {
+      "id": "img-020",
+      "media_type": "image",
+      "is_ai": false,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-020.jpg"
+    },
+    {
+      "id": "img-021",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "unknown-ai-face-gen",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-021.jpg"
+    },
+    {
+      "id": "img-022",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "unknown-ai-face-gen",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-022.jpg"
+    },
+    {
+      "id": "img-023",
+      "media_type": "image",
+      "is_ai": false,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-023.jpg"
+    },
+    {
+      "id": "img-024",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "unknown-ai-face-gen",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-024.jpg"
+    },
+    {
+      "id": "img-025",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "unknown-ai-face-gen",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-025.jpg"
+    },
+    {
+      "id": "img-026",
+      "media_type": "image",
+      "is_ai": false,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-026.jpg"
+    },
+    {
+      "id": "img-027",
+      "media_type": "image",
+      "is_ai": false,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-027.jpg"
+    },
+    {
+      "id": "img-028",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "unknown-ai-face-gen",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-028.jpg"
+    },
+    {
+      "id": "img-029",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "unknown-ai-face-gen",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-029.jpg"
+    },
+    {
+      "id": "img-030",
+      "media_type": "image",
+      "is_ai": false,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-030.jpg"
+    },
+    {
+      "id": "img-031",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "unknown-ai-face-gen",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-031.jpg"
+    },
+    {
+      "id": "img-032",
+      "media_type": "image",
+      "is_ai": false,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-032.jpg"
+    },
+    {
+      "id": "img-033",
+      "media_type": "image",
+      "is_ai": false,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-033.jpg"
+    },
+    {
+      "id": "img-034",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "unknown-ai-face-gen",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-034.jpg"
+    },
+    {
+      "id": "img-035",
+      "media_type": "image",
+      "is_ai": false,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-035.jpg"
+    },
+    {
+      "id": "img-036",
+      "media_type": "image",
+      "is_ai": false,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-036.jpg"
+    },
+    {
+      "id": "img-037",
+      "media_type": "image",
+      "is_ai": false,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-037.jpg"
+    },
+    {
+      "id": "img-038",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "unknown-ai-face-gen",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-038.jpg"
+    },
+    {
+      "id": "img-039",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "unknown-ai-face-gen",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-039.jpg"
+    },
+    {
+      "id": "img-040",
+      "media_type": "image",
+      "is_ai": false,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-040.jpg"
+    },
+    {
+      "id": "img-041",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "unknown-ai-face-gen",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-041.jpg"
+    },
+    {
+      "id": "img-042",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "unknown-ai-face-gen",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-042.jpg"
+    },
+    {
+      "id": "img-043",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "unknown-ai-face-gen",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-043.jpg"
+    },
+    {
+      "id": "img-044",
+      "media_type": "image",
+      "is_ai": false,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-044.jpg"
+    },
+    {
+      "id": "img-045",
+      "media_type": "image",
+      "is_ai": false,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-045.jpg"
+    },
+    {
+      "id": "img-046",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "ai-or-human.github.io",
+      "attribution": "From ai-or-human.github.io open-source project",
+      "license": "unknown-open-source",
+      "explanation": null,
+      "category": "person",
+      "generation_method": "unknown-ai-face-gen",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "face",
+        "portrait",
+        "person"
+      ],
+      "url": "assets/img-046.jpg"
+    },
+    {
+      "id": "img-047",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "twitter",
+      "attribution": null,
+      "license": "CC-BY-4.0",
+      "explanation": "The Pope has never played basketball like this. This was also the first major image that went viral and helped increase awareness of genAI images",
+      "category": null,
+      "generation_method": "unkn",
+      "prior_difficulty": 0.2,
+      "tags": "pope, basketball",
+      "url": "assets/img-047.jpg"
+    },
+    {
+      "id": "vid-023",
+      "media_type": "video",
+      "is_ai": true,
+      "source": "x",
+      "attribution": null,
+      "license": "CC-BY-4.0",
+      "explanation": null,
+      "category": null,
+      "generation_method": null,
+      "prior_difficulty": 0.3,
+      "tags": "ghost, video",
+      "url": "assets/vid-023.mp4"
+    },
+    {
+      "id": "vid-024",
+      "media_type": "video",
+      "is_ai": true,
+      "source": null,
+      "attribution": null,
+      "license": "CC-BY-4.0",
+      "explanation": null,
+      "category": null,
+      "generation_method": null,
+      "prior_difficulty": 0.3,
+      "tags": null,
+      "url": "assets/vid-024.mp4"
+    },
+    {
+      "id": "vid-025",
+      "media_type": "video",
+      "is_ai": true,
+      "source": "x",
+      "attribution": null,
+      "license": "CC-BY-4.0",
+      "explanation": null,
+      "category": null,
+      "generation_method": null,
+      "prior_difficulty": 0.6,
+      "tags": null,
+      "url": "assets/vid-025.mp4"
     }
   ]
 }
