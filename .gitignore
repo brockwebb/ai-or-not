@@ -14,3 +14,4 @@ ingest/*
 !ingest/.gitkeep
 staged/*
 !staged/.gitkeep
+assets/held-back/
