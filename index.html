@@ -1411,27 +1411,40 @@
         return;
       }
 
-      // Percentile — computed client-side from score_distribution
+      // Play count + conditional percentile
       var percentileEl = document.getElementById('results-percentile');
       var totalSessions = stats.total_sessions || 0;
       var dist = stats.score_distribution || [];
       percentileEl.style.display = 'block';
-      if (totalSessions <= 1) {
-        percentileEl.innerHTML = "You're one of the first to play!";
-      } else {
-        var playersBelow = 0;
-        for (var di = 0; di < dist.length; di++) {
-          if (dist[di].score < state.score) { playersBelow += dist[di].count; }
-        }
-        var pct = Math.round((playersBelow / totalSessions) * 100);
-        if (pct === 0) {
-          percentileEl.innerHTML = "You scored higher than 0% of players \u2014 but you're early!";
-        } else if (pct === 100) {
-          percentileEl.innerHTML = 'You scored higher than every other player so far. \uD83C\uDFAF';
-        } else {
-          percentileEl.innerHTML = 'You scored higher than <strong>' + pct + '%</strong> of players';
-        }
+
+      // Percentile math (unchanged)
+      var playersBelow = 0;
+      for (var di = 0; di < dist.length; di++) {
+        if (dist[di].score < state.score) { playersBelow += dist[di].count; }
       }
+      var pct = totalSessions > 0 ? Math.round((playersBelow / totalSessions) * 100) : 0;
+
+      // Always show play count
+      var html = '<strong>Play #' + totalSessions + '</strong>';
+
+      // Gate percentile on sample size
+      if (totalSessions >= 20) {
+        var percentileLine;
+        if (pct === 100) {
+          percentileLine = (state.score === state.sessionItems.length)
+            ? 'Perfect score! Higher than <strong>every other player</strong> so far. \uD83C\uDFAF'
+            : 'You scored higher than <strong>every other player</strong> so far. \uD83C\uDFAF';
+        } else if (pct === 0) {
+          percentileLine = "You're in the bottom of the pack \u2014 try again!";
+        } else if (totalSessions < 50) {
+          percentileLine = 'You scored higher than <strong>' + pct + '%</strong> of players so far';
+        } else {
+          percentileLine = 'You scored higher than <strong>' + pct + '%</strong> of ' + totalSessions + ' players';
+        }
+        html += '<br>' + percentileLine;
+      }
+
+      percentileEl.innerHTML = html;
 
       // Score distribution chart
       if (stats.distribution && Array.isArray(stats.distribution)) {
