@@ -5,7 +5,7 @@
  * per-item accuracy tracking, and score distribution aggregation.
  *
  * Sheets schema:
- *   Sessions:          session_id | timestamp | items_json | score | total
+ *   Sessions:          session_id | timestamp | items_json | score | total | rating | feedback
  *   ItemStats:         item_id | times_shown | times_correct | accuracy
  *   ScoreDistribution: score | count   (rows 0-10, pre-populated)
  *
@@ -21,7 +21,7 @@ var SHEET_SESSIONS          = "Sessions";
 var SHEET_ITEM_STATS        = "ItemStats";
 var SHEET_SCORE_DISTRIBUTION = "ScoreDistribution";
 
-var SESSIONS_HEADERS          = ["session_id", "timestamp", "items_json", "score", "total"];
+var SESSIONS_HEADERS          = ["session_id", "timestamp", "items_json", "score", "total", "rating", "feedback"];
 var ITEM_STATS_HEADERS        = ["item_id", "times_shown", "times_correct", "accuracy"];
 var SCORE_DISTRIBUTION_HEADERS = ["score", "count"];
 
@@ -46,8 +46,8 @@ function doPost(e) {
     return _corsResponse({ status: "error", message: "No POST body received." });
   }
 
-  // Payload size cap — reject obviously oversized requests (legit session ~1-2KB)
-  if (e.postData.contents.length > 10000) {
+  // Payload size cap — reasons can add up to ~5KB; 25KB is generous ceiling
+  if (e.postData.contents.length > 25000) {
     return _corsResponse({ status: "error", message: "Payload too large." });
   }
 
@@ -56,6 +56,11 @@ function doPost(e) {
     payload = JSON.parse(e.postData.contents);
   } catch (err) {
     return _corsResponse({ status: "error", message: "Invalid JSON: " + err.message });
+  }
+
+  // Branch: feedback-only update (separate POST after game completion)
+  if (payload.kind === "feedback") {
+    return _handleFeedbackUpdate(payload);
   }
 
   // --- Validate required fields ---
@@ -88,6 +93,15 @@ function doPost(e) {
         message: "Invalid item_id format: " + item.item_id
       });
     }
+    // reason is optional — accept missing, null, or string ≤500 chars
+    if (item.reason !== undefined && item.reason !== null) {
+      if (typeof item.reason !== 'string') {
+        return _corsResponse({ status: "error", message: "reason must be a string at index " + i + "." });
+      }
+      if (item.reason.length > 500) {
+        return _corsResponse({ status: "error", message: "reason too long at index " + i + "." });
+      }
+    }
   }
 
   // Items array length must exactly match total
@@ -105,6 +119,27 @@ function doPost(e) {
   var total = Number(payload.total);
   if (isNaN(score) || isNaN(total) || score < 0 || score > total) {
     return _corsResponse({ status: "error", message: "score must be a number between 0 and total." });
+  }
+
+  // rating: optional, integer 1-5 if provided
+  var rating = null;
+  if (payload.rating !== undefined && payload.rating !== null) {
+    rating = Number(payload.rating);
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return _corsResponse({ status: "error", message: "rating must be an integer 1-5 if provided." });
+    }
+  }
+
+  // feedback: optional, string ≤500 chars if provided
+  var feedback = "";
+  if (payload.feedback !== undefined && payload.feedback !== null) {
+    if (typeof payload.feedback !== 'string') {
+      return _corsResponse({ status: "error", message: "feedback must be a string if provided." });
+    }
+    if (payload.feedback.length > 500) {
+      return _corsResponse({ status: "error", message: "feedback too long." });
+    }
+    feedback = payload.feedback;
   }
 
   // --- Write data under lock to prevent race conditions ---
@@ -138,7 +173,9 @@ function doPost(e) {
       String(payload.timestamp),
       JSON.stringify(payload.items),
       score,
-      total
+      total,
+      rating,   // null if not provided
+      feedback  // empty string if not provided
     ]);
 
     // 2. Update per-item stats
@@ -169,6 +206,76 @@ function doGet(e) {
 }
 
 // ---------------------------------------------------------------------------
+// Feedback-only update handler
+// ---------------------------------------------------------------------------
+
+/**
+ * Handle a feedback-only POST (kind: "feedback").
+ * Finds the session row by session_id and writes rating + feedback columns.
+ */
+function _handleFeedbackUpdate(payload) {
+  // Validate session_id
+  if (typeof payload.session_id !== 'string' || payload.session_id.length > 64 ||
+      !/^[a-zA-Z0-9_-]+$/.test(payload.session_id)) {
+    return _corsResponse({ status: "error", message: "Invalid session_id format." });
+  }
+
+  // Validate rating
+  var rating = null;
+  if (payload.rating !== undefined && payload.rating !== null) {
+    rating = Number(payload.rating);
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return _corsResponse({ status: "error", message: "rating must be an integer 1-5 if provided." });
+    }
+  }
+
+  // Validate feedback
+  var feedback = "";
+  if (payload.feedback !== undefined && payload.feedback !== null) {
+    if (typeof payload.feedback !== 'string') {
+      return _corsResponse({ status: "error", message: "feedback must be a string if provided." });
+    }
+    if (payload.feedback.length > 500) {
+      return _corsResponse({ status: "error", message: "feedback too long." });
+    }
+    feedback = payload.feedback;
+  }
+
+  var lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+  } catch (err) {
+    return _corsResponse({ status: "error", message: "Server busy. Try again." });
+  }
+
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName(SHEET_SESSIONS);
+    var lastRow = sheet.getLastRow();
+    if (lastRow < 2) {
+      return _corsResponse({ status: "error", message: "Session not found." });
+    }
+    var ids = sheet.getRange(1, 1, lastRow, 1).getValues();
+    var targetRow = -1;
+    for (var r = 0; r < ids.length; r++) {
+      if (String(ids[r][0]) === String(payload.session_id)) {
+        targetRow = r + 1; // 1-based
+        break;
+      }
+    }
+    if (targetRow === -1) {
+      return _corsResponse({ status: "error", message: "Session not found." });
+    }
+    sheet.getRange(targetRow, 6).setValue(rating);   // column 6: rating
+    sheet.getRange(targetRow, 7).setValue(feedback); // column 7: feedback
+  } finally {
+    lock.releaseLock();
+  }
+
+  return _corsResponse({ status: "ok" });
+}
+
+// ---------------------------------------------------------------------------
 // Initialization — run once after creating the Google Sheet
 // ---------------------------------------------------------------------------
 
@@ -196,6 +303,31 @@ function initializeSheets() {
 
   Logger.log("initializeSheets complete. Sheets: " +
     SHEET_SESSIONS + ", " + SHEET_ITEM_STATS + ", " + SHEET_SCORE_DISTRIBUTION);
+}
+
+/**
+ * One-shot: add `rating` and `feedback` columns to an existing Sessions sheet.
+ * Safe to run multiple times — checks the current header row first.
+ * Run manually from the Apps Script editor after deploying the new code.
+ */
+function migrateSessionsSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_SESSIONS);
+  var lastCol = sheet.getLastColumn();
+  var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+
+  if (headers.indexOf("rating") === -1) {
+    sheet.getRange(1, lastCol + 1).setValue("rating");
+    sheet.getRange(1, lastCol + 1).setFontWeight("bold");
+    lastCol++;
+  }
+  if (headers.indexOf("feedback") === -1) {
+    sheet.getRange(1, lastCol + 1).setValue("feedback");
+    sheet.getRange(1, lastCol + 1).setFontWeight("bold");
+  }
+
+  Logger.log("migrateSessionsSheet complete. Header row: " +
+    sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].join(", "));
 }
 
 // ---------------------------------------------------------------------------

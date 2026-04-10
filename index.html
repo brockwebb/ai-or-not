@@ -566,6 +566,68 @@
       color: var(--accent-blue);
     }
 
+    /* Rating + feedback block */
+    .results__feedback-block {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: var(--space-lg);
+      margin: var(--space-lg) 0;
+      text-align: center;
+    }
+
+    .results__feedback-prompt {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-sm);
+    }
+
+    .results__stars {
+      font-size: 1.8rem;
+      letter-spacing: 0.15em;
+      cursor: pointer;
+      margin-bottom: var(--space-sm);
+      user-select: none;
+    }
+
+    .results__stars .star {
+      color: var(--accent-yellow);
+      transition: transform var(--transition-fast);
+    }
+
+    .results__stars .star:hover {
+      transform: scale(1.2);
+    }
+
+    .results__feedback-input {
+      width: 100%;
+      padding: var(--space-sm) var(--space-md);
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: var(--font-stack);
+      font-size: 0.9rem;
+      resize: vertical;
+      min-height: 48px;
+      margin-bottom: var(--space-sm);
+      transition: border-color var(--transition-fast);
+    }
+
+    .results__feedback-input:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+    }
+
+    .results__feedback-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .results__feedback-status {
+      margin-top: var(--space-sm);
+      font-size: 0.85rem;
+    }
+
     /* Score distribution chart */
     .results__chart-section {
       margin: var(--space-xl) 0;
@@ -807,7 +869,6 @@
       <button class="btn btn--primary" id="btn-start">Start Game</button>
 
       <div class="landing__footer">
-        <p>Part of the Scouting America AI Merit Badge</p>
         <p><a href="https://github.com/brockwebb/ai-or-not" target="_blank" rel="noopener">github.com/brockwebb/ai-or-not</a></p>
       </div>
     </div>
@@ -883,6 +944,21 @@
         <div id="results-breakdown"></div>
       </div>
 
+      <!-- Rating & feedback -->
+      <div class="results__feedback-block" id="feedback-block">
+        <p class="results__feedback-prompt">Did you like this?</p>
+        <div class="results__stars" id="stars-row">
+          <span class="star" onclick="setRating(1)">☆</span>
+          <span class="star" onclick="setRating(2)">☆</span>
+          <span class="star" onclick="setRating(3)">☆</span>
+          <span class="star" onclick="setRating(4)">☆</span>
+          <span class="star" onclick="setRating(5)">☆</span>
+        </div>
+        <textarea id="feedback-text" class="results__feedback-input" placeholder="Anything else? (optional)" maxlength="500" oninput="updateFeedbackBtn()"></textarea>
+        <button class="btn btn--secondary" id="btn-feedback" onclick="submitFeedback()" disabled>Send feedback</button>
+        <div class="results__feedback-status" id="feedback-status" style="display:none;"></div>
+      </div>
+
       <!-- Actions -->
       <div class="results__actions">
         <button class="btn btn--primary" onclick="playAgain()">Play Again</button>
@@ -924,7 +1000,8 @@
       score: 0,
       results: [],           // per-item: { item_id, guess, correct, reasoning }
       aggregateStats: null,  // from backend, if available
-      hasGuessed: false      // whether current item has been guessed
+      hasGuessed: false,     // whether current item has been guessed
+      rating: 0              // post-game star rating (0 = not set)
     };
 
     // ---- UUID v4 Generator ----
@@ -1289,7 +1366,12 @@
       var payload = {
         session_id: state.sessionId,
         timestamp: new Date().toISOString(),
-        items: state.results,
+        items: state.results.map(function(r) {
+          var reason = (r.reasoning || '').trim()
+            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+            .slice(0, 500);
+          return { item_id: r.item_id, correct: r.correct, reason: reason };
+        }),
         score: state.score,
         total: state.sessionItems.length
       };
@@ -1329,13 +1411,26 @@
         return;
       }
 
-      // Percentile
+      // Percentile — computed client-side from score_distribution
       var percentileEl = document.getElementById('results-percentile');
-      if (typeof stats.percentile === 'number') {
-        percentileEl.style.display = 'block';
-        percentileEl.innerHTML = 'You beat <strong>' + Math.round(stats.percentile) + '%</strong> of players!';
+      var totalSessions = stats.total_sessions || 0;
+      var dist = stats.score_distribution || [];
+      percentileEl.style.display = 'block';
+      if (totalSessions <= 1) {
+        percentileEl.innerHTML = "You're one of the first to play!";
       } else {
-        showOfflinePercentile();
+        var playersBelow = 0;
+        for (var di = 0; di < dist.length; di++) {
+          if (dist[di].score < state.score) { playersBelow += dist[di].count; }
+        }
+        var pct = Math.round((playersBelow / totalSessions) * 100);
+        if (pct === 0) {
+          percentileEl.innerHTML = "You scored higher than 0% of players \u2014 but you're early!";
+        } else if (pct === 100) {
+          percentileEl.innerHTML = 'You scored higher than every other player so far. \uD83C\uDFAF';
+        } else {
+          percentileEl.innerHTML = 'You scored higher than <strong>' + pct + '%</strong> of players';
+        }
       }
 
       // Score distribution chart
@@ -1442,6 +1537,50 @@
     }
 
     // ---- Play Again ----
+    // ---- Rating & Feedback ----
+    function setRating(val) {
+      state.rating = val;
+      var stars = document.querySelectorAll('#stars-row .star');
+      stars.forEach(function(s, i) { s.textContent = i < val ? '\u2605' : '\u2606'; });
+      updateFeedbackBtn();
+    }
+
+    function updateFeedbackBtn() {
+      var btn = document.getElementById('btn-feedback');
+      var text = (document.getElementById('feedback-text').value || '').trim();
+      btn.disabled = !(state.rating > 0 || text.length > 0);
+    }
+
+    async function submitFeedback() {
+      var btn = document.getElementById('btn-feedback');
+      var text = (document.getElementById('feedback-text').value || '').trim();
+      btn.disabled = true;
+
+      var fbPayload = {
+        kind: 'feedback',
+        session_id: state.sessionId,
+        rating: state.rating > 0 ? state.rating : null,
+        feedback: text
+      };
+
+      try {
+        await fetch(CONFIG.APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(fbPayload),
+          mode: 'no-cors'
+        });
+        document.getElementById('feedback-block').innerHTML =
+          '<p style="color: var(--accent-green); font-size: 1.1rem; padding: var(--space-md);">Thanks! \u2764\uFE0F</p>';
+      } catch (err) {
+        var status = document.getElementById('feedback-status');
+        status.style.display = 'block';
+        status.style.color = 'var(--accent-red)';
+        status.textContent = 'Could not send feedback. Try again?';
+        btn.disabled = false;
+      }
+    }
+
     function playAgain() {
       // Reset state for a new session
       state.sessionId = generateUUID();
@@ -1451,11 +1590,29 @@
       state.results = [];
       state.aggregateStats = null;
       state.hasGuessed = false;
+      state.rating = 0;
 
       // Reset UI elements that might be stale
       document.getElementById('btn-next').textContent = 'Next \u2192';
       document.getElementById('chart-section').style.display = 'none';
       document.getElementById('results-percentile').style.display = 'none';
+
+      // Reset feedback block
+      var fb = document.getElementById('feedback-block');
+      if (fb) {
+        fb.innerHTML =
+          '<p class="results__feedback-prompt">Did you like this?</p>' +
+          '<div class="results__stars" id="stars-row">' +
+          '<span class="star" onclick="setRating(1)">\u2606</span>' +
+          '<span class="star" onclick="setRating(2)">\u2606</span>' +
+          '<span class="star" onclick="setRating(3)">\u2606</span>' +
+          '<span class="star" onclick="setRating(4)">\u2606</span>' +
+          '<span class="star" onclick="setRating(5)">\u2606</span>' +
+          '</div>' +
+          '<textarea id="feedback-text" class="results__feedback-input" placeholder="Anything else? (optional)" maxlength="500" oninput="updateFeedbackBtn()"></textarea>' +
+          '<button class="btn btn--secondary" id="btn-feedback" onclick="submitFeedback()" disabled>Send feedback</button>' +
+          '<div class="results__feedback-status" id="feedback-status" style="display:none;"></div>';
+      }
 
       startGame();
     }
