@@ -1695,6 +1695,14 @@
     //   2 or R = Real
     //   Enter or Space = Next (when feedback is shown)
     document.addEventListener('keydown', function(e) {
+      // Don't intercept keystrokes when the user is typing in a text field.
+      // Without this guard, shortcut keys (a/r/1/2) get hijacked from the
+      // per-item reasoning textarea and the end-of-game feedback textarea.
+      var ae = document.activeElement;
+      if (ae && (ae.tagName === 'TEXTAREA' || ae.tagName === 'INPUT' || ae.isContentEditable)) {
+        return;
+      }
+
       // Only respond on game screen
       if (!document.getElementById('screen-game').classList.contains('active')) return;
 
