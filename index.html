@@ -1015,6 +1015,30 @@
       });
     }
 
+    function generateEventId() {
+      // Short event ID — unique within a session for ItemEvents dedup/joining.
+      return 'evt-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+    }
+
+    // ---- Fire-and-Forget Heartbeat Helper ----
+    // Heartbeats MUST NOT block the game loop or surface errors to the player.
+    // If the backend is down, the game still works; the session-complete POST
+    // is the canonical source of truth.
+    function postEvent(payload) {
+      if (!CONFIG.APPS_SCRIPT_URL) return;
+      try {
+        fetch(CONFIG.APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          mode: 'no-cors',
+          keepalive: true  // survives tab close — critical for incomplete-session capture
+        }).catch(function() { /* swallow */ });
+      } catch (e) {
+        /* swallow */
+      }
+    }
+
     // ---- Screen Navigation ----
     function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(function(s) {
@@ -1179,11 +1203,27 @@
       }
 
       // Record result
+      var reasonText = (document.getElementById('reasoning-text').value || '')
+        .trim()
+        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+        .slice(0, 500);
       state.results.push({
         item_id: item.id,
         guess: guessedAI,
         correct: isCorrect,
-        reasoning: document.getElementById('reasoning-text').value.trim()
+        reasoning: reasonText
+      });
+
+      postEvent({
+        kind: 'item_answered',
+        event_id: generateEventId(),
+        session_id: state.sessionId,
+        timestamp: new Date().toISOString(),
+        item_index: state.currentIndex + 1,
+        item_id: item.id,
+        correct: isCorrect,
+        guess_ai: guessedAI,
+        reason: reasonText
       });
 
       // Disable guess buttons
@@ -1694,6 +1734,12 @@
       state.currentIndex = 0;
       showScreen('screen-game');
       displayCurrentItem();
+      postEvent({
+        kind: 'session_start',
+        session_id: state.sessionId,
+        started_at: new Date().toISOString(),
+        event_id: generateEventId()
+      });
     }
 
     // ---- Keyboard Shortcuts ----

@@ -5,7 +5,8 @@
  * per-item accuracy tracking, and score distribution aggregation.
  *
  * Sheets schema:
- *   Sessions:          session_id | timestamp | items_json | score | total | rating | feedback
+ *   Sessions:          session_id | timestamp | items_json | score | total | rating | feedback | status | started_at
+ *   ItemEvents:        event_id | session_id | timestamp | event_type | item_index | item_id | correct | guess_ai | reason
  *   ItemStats:         item_id | times_shown | times_correct | accuracy
  *   ScoreDistribution: score | count   (rows 0-10, pre-populated)
  *
@@ -17,13 +18,15 @@
 // Configuration — keep tunables out of logic
 // ---------------------------------------------------------------------------
 
-var SHEET_SESSIONS          = "Sessions";
-var SHEET_ITEM_STATS        = "ItemStats";
+var SHEET_SESSIONS           = "Sessions";
+var SHEET_ITEM_STATS         = "ItemStats";
 var SHEET_SCORE_DISTRIBUTION = "ScoreDistribution";
+var SHEET_ITEM_EVENTS        = "ItemEvents";
 
-var SESSIONS_HEADERS          = ["session_id", "timestamp", "items_json", "score", "total", "rating", "feedback"];
+var SESSIONS_HEADERS          = ["session_id", "timestamp", "items_json", "score", "total", "rating", "feedback", "status", "started_at"];
 var ITEM_STATS_HEADERS        = ["item_id", "times_shown", "times_correct", "accuracy"];
 var SCORE_DISTRIBUTION_HEADERS = ["score", "count"];
+var ITEM_EVENTS_HEADERS       = ["event_id", "session_id", "timestamp", "event_type", "item_index", "item_id", "correct", "guess_ai", "reason"];
 
 var MAX_SCORE = 10; // matches CONFIG.ITEMS_PER_SESSION in the frontend
 
@@ -61,6 +64,14 @@ function doPost(e) {
   // Branch: feedback-only update (separate POST after game completion)
   if (payload.kind === "feedback") {
     return _handleFeedbackUpdate(payload);
+  }
+
+  // Branch: session heartbeats — fire-and-forget telemetry
+  if (payload.kind === "session_start") {
+    return _handleSessionStart(payload);
+  }
+  if (payload.kind === "item_answered") {
+    return _handleItemAnswered(payload);
   }
 
   // --- Validate required fields ---
@@ -153,30 +164,55 @@ function doPost(e) {
 
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-
-    // Reject duplicate session_ids — prevents replayed or double-submitted sessions
     var sessionsSheet = ss.getSheetByName(SHEET_SESSIONS);
     var lastRow = sessionsSheet.getLastRow();
+
+    // Look up session_id to determine UPDATE-or-APPEND path.
+    // If a "started" row exists (heartbeat path): update it to complete.
+    // If a "complete" row exists: reject as duplicate.
+    // If no row exists (heartbeats failed): append fresh row (backwards compat).
+    var existingRow = -1;
+    var existingStatus = null;
     if (lastRow > 0) {
-      var existingIds = sessionsSheet.getRange(1, 1, lastRow, 1).getValues();
-      for (var r = 0; r < existingIds.length; r++) {
-        if (String(existingIds[r][0]) === String(payload.session_id)) {
-          lock.releaseLock();
-          return _corsResponse({ status: "error", message: "Duplicate session_id." });
+      var existingData = sessionsSheet.getRange(1, 1, lastRow, 8).getValues();
+      for (var r = 0; r < existingData.length; r++) {
+        if (String(existingData[r][0]) === String(payload.session_id)) {
+          existingRow = r + 1; // 1-based sheet row
+          existingStatus = String(existingData[r][7]); // column 8 = status
+          break;
         }
       }
     }
 
-    // 1. Append session row
-    sessionsSheet.appendRow([
-      String(payload.session_id),
-      String(payload.timestamp),
-      JSON.stringify(payload.items),
-      score,
-      total,
-      rating,   // null if not provided
-      feedback  // empty string if not provided
-    ]);
+    if (existingStatus === "complete") {
+      lock.releaseLock();
+      return _corsResponse({ status: "error", message: "Duplicate session_id." });
+    }
+
+    if (existingRow !== -1) {
+      // Heartbeat path: row exists with status="started" — update in place
+      sessionsSheet.getRange(existingRow, 2).setValue(String(payload.timestamp));
+      sessionsSheet.getRange(existingRow, 3).setValue(JSON.stringify(payload.items));
+      sessionsSheet.getRange(existingRow, 4).setValue(score);
+      sessionsSheet.getRange(existingRow, 5).setValue(total);
+      sessionsSheet.getRange(existingRow, 6).setValue(rating);
+      sessionsSheet.getRange(existingRow, 7).setValue(feedback);
+      sessionsSheet.getRange(existingRow, 8).setValue("complete");
+      // Column 9 (started_at) left untouched — preserves original session start time
+    } else {
+      // Fallback path: no heartbeat row — append as before (backwards compat)
+      sessionsSheet.appendRow([
+        String(payload.session_id),
+        String(payload.timestamp),
+        JSON.stringify(payload.items),
+        score,
+        total,
+        rating,     // null if not provided
+        feedback,   // empty string if not provided
+        "complete", // status
+        ""          // started_at (empty — heartbeat never fired)
+      ]);
+    }
 
     // 2. Update per-item stats
     _updateItemStats(ss, payload.items);
@@ -203,6 +239,138 @@ function doGet(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var stats = _readAggregates(ss);
   return _corsResponse(stats);
+}
+
+// ---------------------------------------------------------------------------
+// Heartbeat handlers
+// ---------------------------------------------------------------------------
+
+/**
+ * Handle kind:"session_start" — creates a "started" row in Sessions
+ * and a session_start event in ItemEvents. Idempotent: silently no-ops
+ * if this session_id already exists (protects against network retries).
+ */
+function _handleSessionStart(payload) {
+  if (typeof payload.session_id !== 'string' || payload.session_id.length > 64 ||
+      !/^[a-zA-Z0-9_-]+$/.test(payload.session_id)) {
+    return _corsResponse({ status: "error", message: "Invalid session_id format." });
+  }
+  if (!payload.started_at || typeof payload.started_at !== 'string' || payload.started_at.length > 32) {
+    return _corsResponse({ status: "error", message: "started_at must be an ISO 8601 string ≤32 chars." });
+  }
+  if (!payload.event_id || typeof payload.event_id !== 'string' || payload.event_id.length > 64 ||
+      !/^[a-zA-Z0-9_-]+$/.test(payload.event_id)) {
+    return _corsResponse({ status: "error", message: "Invalid event_id format." });
+  }
+
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(10000); } catch (err) {
+    return _corsResponse({ status: "error", message: "Server busy. Try again." });
+  }
+
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sessions = ss.getSheetByName(SHEET_SESSIONS);
+
+    // Idempotency check — don't create duplicate started rows
+    var lastRow = sessions.getLastRow();
+    if (lastRow > 0) {
+      var ids = sessions.getRange(1, 1, lastRow, 1).getValues();
+      for (var r = 0; r < ids.length; r++) {
+        if (String(ids[r][0]) === String(payload.session_id)) {
+          return _corsResponse({ status: "ok" }); // already exists, silently succeed
+        }
+      }
+    }
+
+    // Create a "started" row — score/items/etc. intentionally empty
+    sessions.appendRow([
+      String(payload.session_id),
+      String(payload.started_at), // timestamp = start time
+      "[]",     // items_json placeholder
+      "",       // score — empty, not 0, to distinguish from a real 0 score
+      "",       // total
+      null,     // rating
+      "",       // feedback
+      "started", // status
+      String(payload.started_at)  // started_at
+    ]);
+
+    // Also log to ItemEvents
+    ss.getSheetByName(SHEET_ITEM_EVENTS).appendRow([
+      String(payload.event_id),
+      String(payload.session_id),
+      String(payload.started_at),
+      "session_start",
+      null, null, null, null, "" // item-specific columns empty
+    ]);
+  } finally {
+    lock.releaseLock();
+  }
+
+  return _corsResponse({ status: "ok" });
+}
+
+/**
+ * Handle kind:"item_answered" — appends a single row to ItemEvents.
+ * Does NOT touch the Sessions sheet.
+ */
+function _handleItemAnswered(payload) {
+  if (typeof payload.session_id !== 'string' || payload.session_id.length > 64 ||
+      !/^[a-zA-Z0-9_-]+$/.test(payload.session_id)) {
+    return _corsResponse({ status: "error", message: "Invalid session_id format." });
+  }
+  if (!payload.event_id || typeof payload.event_id !== 'string' || payload.event_id.length > 64 ||
+      !/^[a-zA-Z0-9_-]+$/.test(payload.event_id)) {
+    return _corsResponse({ status: "error", message: "Invalid event_id format." });
+  }
+  if (!payload.timestamp || typeof payload.timestamp !== 'string' || payload.timestamp.length > 32) {
+    return _corsResponse({ status: "error", message: "timestamp must be an ISO 8601 string ≤32 chars." });
+  }
+  var itemIndex = Number(payload.item_index);
+  if (!Number.isInteger(itemIndex) || itemIndex < 1 || itemIndex > 10) {
+    return _corsResponse({ status: "error", message: "item_index must be an integer 1–10." });
+  }
+  if (!payload.item_id || !/^(img|vid)-\d{3}$/.test(String(payload.item_id))) {
+    return _corsResponse({ status: "error", message: "Invalid item_id format." });
+  }
+  if (typeof payload.correct !== 'boolean') {
+    return _corsResponse({ status: "error", message: "correct must be a boolean." });
+  }
+  if (typeof payload.guess_ai !== 'boolean') {
+    return _corsResponse({ status: "error", message: "guess_ai must be a boolean." });
+  }
+  var reason = "";
+  if (payload.reason !== undefined && payload.reason !== null) {
+    if (typeof payload.reason !== 'string' || payload.reason.length > 500) {
+      return _corsResponse({ status: "error", message: "reason must be a string ≤500 chars." });
+    }
+    reason = payload.reason;
+  }
+
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(10000); } catch (err) {
+    return _corsResponse({ status: "error", message: "Server busy. Try again." });
+  }
+
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    ss.getSheetByName(SHEET_ITEM_EVENTS).appendRow([
+      String(payload.event_id),
+      String(payload.session_id),
+      String(payload.timestamp),
+      "item_answered",
+      itemIndex,
+      String(payload.item_id),
+      payload.correct,
+      payload.guess_ai,
+      reason
+    ]);
+  } finally {
+    lock.releaseLock();
+  }
+
+  return _corsResponse({ status: "ok" });
 }
 
 // ---------------------------------------------------------------------------
@@ -301,8 +469,11 @@ function initializeSheets() {
     }
   }
 
+  // ItemEvents — append-only per-item telemetry
+  _ensureSheet(ss, SHEET_ITEM_EVENTS, ITEM_EVENTS_HEADERS);
+
   Logger.log("initializeSheets complete. Sheets: " +
-    SHEET_SESSIONS + ", " + SHEET_ITEM_STATS + ", " + SHEET_SCORE_DISTRIBUTION);
+    SHEET_SESSIONS + ", " + SHEET_ITEM_STATS + ", " + SHEET_SCORE_DISTRIBUTION + ", " + SHEET_ITEM_EVENTS);
 }
 
 /**
@@ -328,6 +499,50 @@ function migrateSessionsSheet() {
 
   Logger.log("migrateSessionsSheet complete. Header row: " +
     sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].join(", "));
+}
+
+/**
+ * One-shot v2 migration: adds `status` and `started_at` columns to Sessions,
+ * backfills existing complete rows, and creates the ItemEvents sheet.
+ * Safe to run multiple times.
+ * Run manually from the Apps Script editor after deploying the new code.
+ */
+function migrateSessionsSheet_v2() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // 1. Add status and started_at columns to Sessions if missing
+  var sessionsSheet = ss.getSheetByName(SHEET_SESSIONS);
+  var lastCol = sessionsSheet.getLastColumn();
+  var headers = sessionsSheet.getRange(1, 1, 1, lastCol).getValues()[0];
+
+  if (headers.indexOf("status") === -1) {
+    sessionsSheet.getRange(1, lastCol + 1).setValue("status");
+    sessionsSheet.getRange(1, lastCol + 1).setFontWeight("bold");
+    lastCol++;
+  }
+  if (headers.indexOf("started_at") === -1) {
+    sessionsSheet.getRange(1, lastCol + 1).setValue("started_at");
+    sessionsSheet.getRange(1, lastCol + 1).setFontWeight("bold");
+  }
+
+  // 2. Backfill status="complete" for all existing rows that have no status yet
+  var statusCol = SESSIONS_HEADERS.indexOf("status") + 1; // 1-based
+  var sessionsLastRow = sessionsSheet.getLastRow();
+  if (sessionsLastRow > 1) {
+    var allStatuses = sessionsSheet.getRange(2, statusCol, sessionsLastRow - 1, 1).getValues();
+    for (var r = 0; r < allStatuses.length; r++) {
+      if (!allStatuses[r][0]) {
+        sessionsSheet.getRange(r + 2, statusCol).setValue("complete");
+      }
+    }
+  }
+
+  // 3. Create ItemEvents sheet if missing
+  _ensureSheet(ss, SHEET_ITEM_EVENTS, ITEM_EVENTS_HEADERS);
+
+  Logger.log("migrateSessionsSheet_v2 complete. Sessions headers: " +
+    sessionsSheet.getRange(1, 1, 1, sessionsSheet.getLastColumn()).getValues()[0].join(", ") +
+    ". ItemEvents sheet ensured.");
 }
 
 // ---------------------------------------------------------------------------
