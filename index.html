@@ -1424,8 +1424,15 @@
       }
       var pct = totalSessions > 0 ? Math.round((playersBelow / totalSessions) * 100) : 0;
 
-      // Always show play count
-      var html = '<strong>Play #' + totalSessions + '</strong>';
+      // Play count line — wording varies by N
+      var html;
+      if (totalSessions === 1) {
+        html = "You're the very first player! \uD83C\uDF89";
+      } else if (totalSessions < 20) {
+        html = "You're player <strong>#" + totalSessions + "</strong> \u2014 be one of the first to set the curve!";
+      } else {
+        html = '<strong>Play #' + totalSessions + '</strong>';
+      }
 
       // Gate percentile on sample size
       if (totalSessions >= 20) {
