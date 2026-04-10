@@ -174,11 +174,12 @@ function doPost(e) {
     var existingRow = -1;
     var existingStatus = null;
     if (lastRow > 0) {
-      var existingData = sessionsSheet.getRange(1, 1, lastRow, 8).getValues();
+      var existingData = sessionsSheet.getRange(1, 1, lastRow, SESSIONS_HEADERS.length).getValues();
+      var statusIdx = _sessionsCol("status") - 1; // zero-based for array access
       for (var r = 0; r < existingData.length; r++) {
         if (String(existingData[r][0]) === String(payload.session_id)) {
           existingRow = r + 1; // 1-based sheet row
-          existingStatus = String(existingData[r][7]); // column 8 = status
+          existingStatus = String(existingData[r][statusIdx]);
           break;
         }
       }
@@ -191,14 +192,14 @@ function doPost(e) {
 
     if (existingRow !== -1) {
       // Heartbeat path: row exists with status="started" — update in place
-      sessionsSheet.getRange(existingRow, 2).setValue(String(payload.timestamp));
-      sessionsSheet.getRange(existingRow, 3).setValue(JSON.stringify(payload.items));
-      sessionsSheet.getRange(existingRow, 4).setValue(score);
-      sessionsSheet.getRange(existingRow, 5).setValue(total);
-      sessionsSheet.getRange(existingRow, 6).setValue(rating);
-      sessionsSheet.getRange(existingRow, 7).setValue(feedback);
-      sessionsSheet.getRange(existingRow, 8).setValue("complete");
-      // Column 9 (started_at) left untouched — preserves original session start time
+      sessionsSheet.getRange(existingRow, _sessionsCol("timestamp")).setValue(String(payload.timestamp));
+      sessionsSheet.getRange(existingRow, _sessionsCol("items_json")).setValue(JSON.stringify(payload.items));
+      sessionsSheet.getRange(existingRow, _sessionsCol("score")).setValue(score);
+      sessionsSheet.getRange(existingRow, _sessionsCol("total")).setValue(total);
+      sessionsSheet.getRange(existingRow, _sessionsCol("rating")).setValue(rating);
+      sessionsSheet.getRange(existingRow, _sessionsCol("feedback")).setValue(feedback);
+      sessionsSheet.getRange(existingRow, _sessionsCol("status")).setValue("complete");
+      // started_at left untouched — preserves original session start time
     } else {
       // Fallback path: no heartbeat row — append as before (backwards compat)
       sessionsSheet.appendRow([
@@ -434,8 +435,8 @@ function _handleFeedbackUpdate(payload) {
     if (targetRow === -1) {
       return _corsResponse({ status: "error", message: "Session not found." });
     }
-    sheet.getRange(targetRow, 6).setValue(rating);   // column 6: rating
-    sheet.getRange(targetRow, 7).setValue(feedback); // column 7: feedback
+    sheet.getRange(targetRow, _sessionsCol("rating")).setValue(rating);
+    sheet.getRange(targetRow, _sessionsCol("feedback")).setValue(feedback);
   } finally {
     lock.releaseLock();
   }
@@ -560,6 +561,20 @@ function _missingFields(obj, required) {
     }
   }
   return missing;
+}
+
+/**
+ * Return the 1-based column number for a named column in the Sessions sheet.
+ * Throws if the column name is not in SESSIONS_HEADERS — fail loud, not silent.
+ *
+ * Usage: _sessionsCol("rating")  →  6  (or whatever the current position is)
+ */
+function _sessionsCol(name) {
+  var idx = SESSIONS_HEADERS.indexOf(name);
+  if (idx === -1) {
+    throw new Error("_sessionsCol: unknown column name: " + name);
+  }
+  return idx + 1; // 1-based for Sheets API
 }
 
 /**
