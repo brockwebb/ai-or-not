@@ -1550,6 +1550,28 @@
         "person"
       ],
       "url": "assets/img-055.jpg"
+    },
+    {
+      "id": "img-056",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "Social media, Hurricane Helene, October 2024",
+      "attribution": "Unknown creator -- viral AI-generated disaster image",
+      "license": "viral-social-media-fair-use",
+      "explanation": "This AI-generated image went viral during Hurricane Helene in 2024, with many people believing it was real. Key tells: the puppy's fur lacks realistic texture and the eyes have a cartoon-like quality. The scene is also implausible -- a child this age alone in a rescue boat with a perfectly composed, high-clarity shot in disaster conditions. AI-generated disaster imagery is particularly dangerous because emotional content bypasses critical thinking. Ask yourself: would this shot actually be possible in these conditions?",
+      "category": "scene",
+      "generation_method": "ai-image-generation",
+      "prior_difficulty": 0.6,
+      "tags": [
+        "disaster",
+        "hurricane",
+        "child",
+        "dog",
+        "rescue",
+        "emotional-manipulation",
+        "trick-item"
+      ],
+      "url": "assets/img-056.jpg"
     }
   ]
 }
