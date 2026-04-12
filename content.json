@@ -1530,6 +1530,26 @@
         "agriculture"
       ],
       "url": "assets/vid-049.mp4"
+    },
+    {
+      "id": "img-055",
+      "media_type": "image",
+      "is_ai": true,
+      "source": "TikTok, October 2023",
+      "attribution": "Unknown creator -- deepfake scam ad, not authentic MrBeast content",
+      "license": "viral-social-media-fair-use",
+      "explanation": "This is the infamous 2023 MrBeast deepfake TikTok scam ad. Look at the mouth region: the lip movement has a classic deepfake 'floating' quality that doesn't mesh with surrounding skin texture. Facial skin is over-smoothed compared to what real footage would show. The '10,000 lucky people get an iPhone 15 for $2' script is the exact scam framing MrBeast publicly called out on Twitter. The TikTok watermark and verified-handle overlay were standard packaging for this scam. Deepfakes of known public figures often combine visual artifacts with implausible claims -- the content itself is a tell.",
+      "category": "person",
+      "generation_method": "deepfake",
+      "prior_difficulty": 0.35,
+      "tags": [
+        "mrbeast",
+        "deepfake",
+        "face-swap",
+        "scam",
+        "person"
+      ],
+      "url": "assets/img-055.jpg"
     }
   ]
 }
