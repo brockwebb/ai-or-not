@@ -4,7 +4,7 @@
     "description": "AI or Not? Game Content Library",
     "license": "See individual item licenses",
     "curator": "brockwebb",
-    "last_updated": "2026-04-10"
+    "last_updated": "2026-04-11"
   },
   "items": [
     {
@@ -1257,6 +1257,196 @@
       "generation_method": "ai-generated",
       "prior_difficulty": 0.5,
       "tags": null
+    },
+    {
+      "id": "vid-036",
+      "media_type": "video",
+      "url": "assets/vid-036.mp4",
+      "is_ai": false,
+      "source": "social-media",
+      "attribution": "Unknown creator, viral social media",
+      "license": "viral-social-media-fair-use",
+      "explanation": "A black bear wanders into a picnic area. Look for the natural, fluid movement of the bear and the authentic, unscripted reactions of people. Real wildlife footage has consistent lighting, natural background detail, and the organic unpredictability of animal behavior that AI cannot convincingly fake.",
+      "category": "animal",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "animal",
+        "wildlife",
+        "bear",
+        "funny"
+      ]
+    },
+    {
+      "id": "vid-037",
+      "media_type": "video",
+      "url": "assets/vid-037.mp4",
+      "is_ai": false,
+      "source": "social-media",
+      "attribution": "Unknown creator, viral social media",
+      "license": "viral-social-media-fair-use",
+      "explanation": "A puppy with endearingly large, expressive eyes. Notice the authentic sheen and depth of the eyes, natural fur texture with individual hairs, and the slight asymmetry common in real animals. AI-generated animals often have glassy, overly perfect eyes and unnaturally uniform fur patterns.",
+      "category": "animal",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "animal",
+        "dog",
+        "puppy",
+        "cute"
+      ]
+    },
+    {
+      "id": "vid-038",
+      "media_type": "video",
+      "url": "assets/vid-038.mp4",
+      "is_ai": false,
+      "source": "social-media",
+      "attribution": "Unknown creator, viral social media",
+      "license": "viral-social-media-fair-use",
+      "explanation": "A real optical illusion captured on camera. The physical setup, camera perspective, and lighting are all consistent and grounded in real-world geometry. Genuine optical illusions work through carefully controlled perspective and are entirely achievable without AI.",
+      "category": "scene",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "illusion",
+        "optical",
+        "science",
+        "perception"
+      ]
+    },
+    {
+      "id": "vid-039",
+      "media_type": "video",
+      "url": "assets/vid-039.mp4",
+      "is_ai": false,
+      "source": "social-media",
+      "attribution": "Unknown creator, viral social media",
+      "license": "viral-social-media-fair-use",
+      "explanation": "Someone headbanging with vigorous hair movement. Watch the physics of hair \u2014 the weight, inertia, and strands separating naturally as the head moves. Real hair behaves according to gravity and momentum in ways that AI video still struggles to replicate convincingly.",
+      "category": "scene",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "music",
+        "funny",
+        "human",
+        "motion"
+      ]
+    },
+    {
+      "id": "vid-040",
+      "media_type": "video",
+      "url": "assets/vid-040.mp4",
+      "is_ai": false,
+      "source": "social-media",
+      "attribution": "Unknown creator, viral social media",
+      "license": "viral-social-media-fair-use",
+      "explanation": "A heated ball interacting with a viscous material, demonstrating real thermodynamic and fluid physics. The heat glow, deformation patterns, and material response follow physical laws precisely. Real-world physics demonstrations like this have consistent, predictable behavior grounded in chemistry and thermodynamics.",
+      "category": "scene",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "science",
+        "physics",
+        "satisfying",
+        "materials"
+      ]
+    },
+    {
+      "id": "vid-041",
+      "media_type": "video",
+      "url": "assets/vid-041.mp4",
+      "is_ai": false,
+      "source": "social-media",
+      "attribution": "Unknown creator, viral social media",
+      "license": "viral-social-media-fair-use",
+      "explanation": "A kookaburra producing its distinctive laughing call. The precise beak movement synchronized with the iconic vocalization, natural feather detail, and authentic perching behavior are hallmarks of real wildlife footage. The kookaburra's call is one of the most recognizable sounds in nature.",
+      "category": "animal",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "animal",
+        "bird",
+        "wildlife",
+        "sound"
+      ]
+    },
+    {
+      "id": "vid-042",
+      "media_type": "video",
+      "url": "assets/vid-042.mp4",
+      "is_ai": false,
+      "source": "social-media",
+      "attribution": "Unknown creator, viral social media",
+      "license": "viral-social-media-fair-use",
+      "explanation": "A lamb interacting with a cake or food. Real lamb footage shows the natural texture of wool, authentic grazing/eating behavior, and the slightly wobbly, unsteady movement characteristic of young sheep. The environmental context \u2014 lighting, ground texture, surroundings \u2014 all appear naturally consistent.",
+      "category": "animal",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "animal",
+        "farm",
+        "sheep",
+        "funny"
+      ]
+    },
+    {
+      "id": "vid-043",
+      "media_type": "video",
+      "url": "assets/vid-043.mp4",
+      "is_ai": false,
+      "source": "social-media",
+      "attribution": "Unknown creator, viral social media",
+      "license": "viral-social-media-fair-use",
+      "explanation": "A squirrel on or near a grill. Note the squirrel's quick, darting movements and the natural fur detail \u2014 real squirrels have irregular, slightly unkempt fur with visible individual hairs. Their rapid, twitchy behavior and the consistent environmental lighting confirm this is authentic wildlife footage.",
+      "category": "animal",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "animal",
+        "squirrel",
+        "wildlife",
+        "funny"
+      ]
+    },
+    {
+      "id": "vid-044",
+      "media_type": "video",
+      "url": "assets/vid-044.mp4",
+      "is_ai": false,
+      "source": "social-media",
+      "attribution": "Unknown creator, viral social media",
+      "license": "viral-social-media-fair-use",
+      "explanation": "Steam rising from a head or face, likely from body heat on a cold day or a hot treatment. The steam dispersal follows real fluid dynamics \u2014 rising, curling, and dissipating in ways governed by air currents and temperature gradients. Real steam has an organic, unpredictable quality that AI often renders too uniformly.",
+      "category": "scene",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "science",
+        "steam",
+        "physics",
+        "satisfying"
+      ]
+    },
+    {
+      "id": "vid-045",
+      "media_type": "video",
+      "url": "assets/vid-045.mp4",
+      "is_ai": false,
+      "source": "social-media",
+      "attribution": "Unknown creator, viral social media",
+      "license": "viral-social-media-fair-use",
+      "explanation": "A clown with striking two-toned or unusual face makeup. Real theatrical makeup shows natural skin texture beneath the paint, genuine facial expressions that move the paint with the muscles, and the subtle imperfections of hand-applied cosmetics. The authentic expressiveness of a real performer is difficult for AI to replicate.",
+      "category": "scene",
+      "generation_method": "photograph",
+      "prior_difficulty": 0.5,
+      "tags": [
+        "performance",
+        "clown",
+        "makeup",
+        "funny"
+      ]
     }
   ]
 }
