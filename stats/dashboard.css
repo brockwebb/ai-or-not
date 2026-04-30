@@ -1,0 +1,578 @@
+/* =============================================================
+   AI or Not? — Live Data Station v2
+   Dual-theme instrument panel: Vault-Tec (default) + Pip-Boy.
+
+   Every color is routed through a CSS custom property on :root.
+   508/WCAG AA verified — see handoffs/2026-04-21_stats-dashboard-v2.md
+   for the contrast math.
+
+   Shape/label cues supplement color everywhere state is encoded:
+   - Dial needle position      → shape cue for accuracy
+   - LED numerics + panel text → label cue for every readout
+   - Scatter marker shape      → shape cue for dropout category
+   ============================================================= */
+
+/* ---- Vault-Tec (default, Census credibility) ----
+   Accent tiers: accents are split into chassis-side ("x") and
+   bezel-side ("x-led") variants where a single hue cannot pass
+   AA contrast against both a light chassis AND a dark bezel.
+   Every pairing used is verified in the 2026-04-21 handoff. */
+:root,
+:root[data-theme="vaulttec"] {
+  --bg-lab:               #1a1a1a;
+  --bg-lab-grad:          #262626;
+
+  --chassis:              #e8dcc0;
+  --chassis-hi:           #f5ebd0;
+  --chassis-lo:           #b8a880;
+  --chassis-edge:         #7a6c48;
+  --chassis-ink:          #1a1a1a;   /* 12.79:1 on chassis — AAA */
+
+  --bezel:                #1f1a12;
+  --bezel-hi:             #3a3322;
+  --bezel-lo:             #0a0805;
+  --bezel-ink:            #f5ebd0;   /* 14.55:1 on bezel — AAA */
+
+  /* Primary — bright amber for LEDs/needles on dark; muted amber for UI on chassis. */
+  --accent-primary:       #d97706;   /* 5.43:1 on bezel — AA (large LED); 4.83:1 on dial-arc */
+  --accent-primary-ui:    #b45309;   /* 3.69:1 on chassis — AA for UI/graphical */
+  --accent-primary-deep:  #b45309;   /* legacy alias */
+
+  /* Secondary — teal family. Chassis use on text; bezel use for graphical lines. */
+  --accent-secondary:     #0a5a52;   /* 5.94:1 on chassis — AA normal text */
+  --accent-secondary-led: #14b8a6;   /* 6.95:1 on bezel — AA for text/lines */
+
+  /* Positive — green family. */
+  --accent-positive:      #166534;   /* 5.24:1 on chassis — AA */
+  --accent-positive-led:  #16a34a;   /* 5.31:1 on bezel — AA */
+
+  /* Attention — red family. */
+  --accent-attention:     #991b1b;   /* 6.11:1 on chassis — AA */
+  --accent-attention-led: #ef4444;   /* 4.59:1 on bezel — AA */
+
+  --dial-arc:             #2a241a;
+  --dial-tick:            #f5ebd0;   /* ticks use bezel-ink — 12.94:1 on dial-arc */
+
+  --rivet:                #5a5138;
+  --rivet-hi:             #a89a78;
+
+  --scanline-alpha:       0;
+  --led-glow:             0 0 0 transparent;
+
+  --font-label:           "Courier New", "Menlo", monospace;
+  --font-led:             "DSEG7 Classic", "Courier New", monospace;
+}
+
+/* ---- Pip-Boy (alternate, Scouts-playful) ----
+   Phosphor monochrome CRT. One bright value does everything
+   because chassis is near-black — bezel and chassis both support
+   AA with the same primary green. */
+:root[data-theme="pipboy"] {
+  --bg-lab:               #050d06;
+  --bg-lab-grad:          #0a1a0a;
+
+  --chassis:              #0d2210;
+  --chassis-hi:           #1a3a1e;
+  --chassis-lo:           #000000;
+  --chassis-edge:         #051005;
+  --chassis-ink:          #38b000;   /* 5.89:1 on chassis — AA */
+
+  --bezel:                #000000;
+  --bezel-hi:             #0a1a0a;
+  --bezel-lo:             #000000;
+  --bezel-ink:            #38b000;
+
+  --accent-primary:       #38b000;   /* 7.38:1 on bezel — AAA */
+  --accent-primary-ui:    #38b000;   /* 5.89:1 on chassis — AA */
+  --accent-primary-deep:  #2a8a00;
+
+  --accent-secondary:     #a0ff3c;   /* 13.45:1 on chassis — AAA */
+  --accent-secondary-led: #a0ff3c;   /* 16.86:1 on bezel — AAA */
+
+  --accent-positive:      #38b000;
+  --accent-positive-led:  #38b000;
+
+  --accent-attention:     #ffa500;   /* 8.48:1 on chassis — AAA */
+  --accent-attention-led: #ffa500;
+
+  --dial-arc:             #0a1a0a;
+  --dial-tick:            #38b000;
+
+  --rivet:                #1a3a1e;
+  --rivet-hi:             #38b000;
+
+  --scanline-alpha:       0.06;
+  --led-glow:             0 0 6px rgba(56, 176, 0, 0.45);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  color: var(--chassis-ink);
+  font-family: var(--font-label);
+  min-height: 100vh;
+  background: radial-gradient(ellipse at top, var(--bg-lab-grad) 0%, var(--bg-lab) 70%);
+}
+
+/* Pip-Boy scanlines: a tiny repeating gradient over the entire rack.
+   Vault-Tec sets --scanline-alpha to 0 so this is inert. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, var(--scanline-alpha)) 0px,
+    rgba(0, 0, 0, var(--scanline-alpha)) 1px,
+    transparent 1px,
+    transparent 3px);
+}
+
+/* ----- Rack layout ----- */
+
+.rack {
+  position: relative;
+  z-index: 2; /* above scanlines */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "header        header"
+    "hero          hero"
+    "distribution  distribution"
+    "dial-real     dial-ai"
+    "meter         scatter"
+    "status        status";
+  gap: 18px;
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.rack-header       { grid-area: header; }
+.chassis-hero      { grid-area: hero; }
+.chassis-distribution { grid-area: distribution; }
+#widget-dial-real  { grid-area: dial-real; }
+#widget-dial-ai    { grid-area: dial-ai; }
+#widget-completion { grid-area: meter; }
+.chassis-scatter   { grid-area: scatter; }
+.status-bar        { grid-area: status; }
+
+/* ----- Chassis panel ----- */
+
+.chassis {
+  position: relative;
+  background:
+    linear-gradient(180deg,
+      var(--chassis-hi) 0%,
+      var(--chassis) 8%,
+      var(--chassis) 92%,
+      var(--chassis-lo) 100%);
+  border: 1px solid var(--chassis-edge);
+  border-top-color: var(--chassis-hi);
+  border-left-color: var(--chassis-hi);
+  border-radius: 8px;
+  padding: 20px 24px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.18),
+    0 6px 18px rgba(0, 0, 0, 0.55);
+}
+
+/* Rivets: decorative corner dots */
+.rivet {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, var(--rivet-hi), var(--rivet) 60%, #000 100%);
+  box-shadow: inset 0 -1px 1px rgba(0, 0, 0, 0.5);
+}
+.rivet-tl { top: 8px;    left: 8px; }
+.rivet-tr { top: 8px;    right: 8px; }
+.rivet-bl { bottom: 8px; left: 8px; }
+.rivet-br { bottom: 8px; right: 8px; }
+
+/* ----- Nameplate ----- */
+
+.nameplate {
+  text-align: center;
+  color: var(--chassis-ink);
+  padding: 6px 0 2px 0;
+  letter-spacing: 0.12em;
+}
+.nameplate-model {
+  font-size: 0.65rem;
+  opacity: 0.75;
+  letter-spacing: 0.22em;
+}
+.nameplate-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.35em;
+  margin: 2px 0;
+}
+.nameplate-sub {
+  font-size: 0.75rem;
+  opacity: 0.75;
+  letter-spacing: 0.22em;
+}
+
+/* ----- Labels, captions, panel titles ----- */
+
+.panel-title {
+  font-size: 0.85rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--chassis-ink);
+  text-align: center;
+  margin-bottom: 14px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed var(--chassis-edge);
+  font-weight: 700;
+}
+
+.panel-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--chassis-ink);
+  text-align: center;
+  opacity: 0.9;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.panel-caption {
+  margin-top: 10px;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: var(--chassis-ink);
+  text-align: center;
+}
+.teaching-caption {
+  margin-top: 12px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-style: italic;
+  color: var(--chassis-ink);
+  background: rgba(0, 0, 0, 0.06);
+  border-left: 3px solid var(--accent-secondary);
+  text-align: left;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+:root[data-theme="pipboy"] .teaching-caption {
+  background: rgba(56, 176, 0, 0.07);
+}
+
+/* ----- LED bezel ----- */
+
+.bezel {
+  background: linear-gradient(180deg, var(--bezel-hi) 0%, var(--bezel) 30%, var(--bezel-lo) 100%);
+  border-radius: 6px;
+  padding: 10px 18px;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.85),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 70px;
+}
+.bezel-hero  { min-height: 110px; }
+.bezel-small { min-height: 48px; padding: 6px 14px; }
+
+/* ----- LED readouts ----- */
+
+.led {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--font-led), monospace;
+  color: var(--bezel-ink);
+  font-weight: 700;
+}
+.led-primary    { color: var(--accent-primary); }
+.led-secondary  { color: var(--accent-secondary-led); }
+.led-attention  { color: var(--accent-attention-led); }
+.led-ok         { color: var(--accent-positive-led); }
+
+/* Sizes */
+.led-hero .led-value { font-size: 4.4rem; line-height: 1; letter-spacing: 0.04em; }
+.led-med  .led-value { font-size: 2.6rem; line-height: 1; letter-spacing: 0.05em; }
+.led-sm   .led-value { font-size: 1.4rem; line-height: 1; letter-spacing: 0.05em; }
+.led-unit            { font-size: 1.1rem; letter-spacing: 0.18em; opacity: 0.9; }
+.led-hero .led-unit  { font-size: 1.6rem; }
+.led-sm   .led-unit  { font-size: 0.9rem; }
+
+/* Subtle phosphor glow for Pip-Boy only (var is empty on Vault-Tec). */
+:root[data-theme="pipboy"] .led {
+  text-shadow: var(--led-glow);
+}
+
+/* Faint ghost-segment backing — keeps the seven-segment illusion
+   without adding a text shadow that could obscure the lit value. */
+.led-ghost {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  color: var(--accent-primary);
+  opacity: 0.10;
+  pointer-events: none;
+  font-family: inherit;
+}
+:root[data-theme="pipboy"] .led-ghost { color: var(--accent-primary); opacity: 0.06; }
+.led-hero .led-ghost::before { content: "88888888"; font-size: 4.4rem; letter-spacing: 0.04em; }
+.led-med  .led-ghost::before { content: "88.8";     font-size: 2.6rem; letter-spacing: 0.05em; }
+.led-sm   .led-ghost::before { content: "88.8";     font-size: 1.4rem; letter-spacing: 0.05em; }
+
+/* ----- Widget: Score Distribution ----- */
+
+.distribution-readouts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+.readout-pair { text-align: center; }
+
+.plot-host {
+  background: var(--bezel);
+  border-radius: 6px;
+  padding: 10px;
+  min-height: 220px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.7);
+  /* Ensure Plot's default text is legible against the dark bezel. */
+  color: var(--bezel-ink);
+}
+.plot-host svg { color: var(--bezel-ink); }
+.plot-host text { fill: var(--bezel-ink); font-family: var(--font-label); }
+
+.plot-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  font-family: var(--font-led), monospace;
+  font-size: 1.2rem;
+  letter-spacing: 0.24em;
+  color: var(--accent-primary);
+  opacity: 0.85;
+}
+
+/* ----- Widget: Dials ----- */
+
+.dial-host {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 0 0;
+}
+.dial-host svg { width: 100%; max-width: 280px; height: auto; display: block; }
+
+/* Dial SVG parts — styled via class so theme palette carries over. */
+.dial-arc-bg      { fill: var(--dial-arc); stroke: var(--chassis-edge); stroke-width: 1.2; }
+.dial-tick        { stroke: var(--dial-tick); stroke-width: 1.5; }
+.dial-tick-major  { stroke: var(--dial-tick); stroke-width: 2.2; }
+.dial-tick-label  { fill: var(--chassis-ink); font-family: var(--font-label); font-size: 9px; letter-spacing: 0.14em; font-weight: 700; }
+.dial-chance-label{ fill: var(--accent-secondary); font-size: 10px; font-weight: 700; }
+.dial-needle      { stroke: var(--accent-primary); stroke-width: 3; stroke-linecap: round; }
+.dial-hub         { fill: var(--accent-primary-deep); stroke: var(--chassis-ink); stroke-width: 1; }
+
+.dial-led { margin-top: 12px; }
+
+/* ----- Widget: Dropout scatter ----- */
+
+.scatter-counts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.scatter-count-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 6px;
+  border: 1px solid var(--chassis-edge);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.04);
+}
+:root[data-theme="pipboy"] .scatter-count-cell { background: rgba(56, 176, 0, 0.05); }
+.scatter-count-cell .cat-symbol {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+.scatter-count-cell .cat-count {
+  font-family: var(--font-led), monospace;
+  font-weight: 700;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+/* Category colors — applied to cat-symbol and count so shape+color both carry. */
+.cat-low  .cat-symbol,
+.cat-low  .cat-count  { color: var(--accent-attention); }
+.cat-mid  .cat-symbol,
+.cat-mid  .cat-count  { color: var(--chassis-ink); }
+.cat-high .cat-symbol,
+.cat-high .cat-count  { color: var(--accent-positive); }
+
+/* Plot scatter marker colors are passed inline from dashboard.js via
+   themeVar() — those values come from the --accent-*-led vars below so
+   the dots pass 3:1 against the dark plot-host background. */
+
+/* ----- Status bar ----- */
+
+.status-bar {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  gap: 22px;
+  align-items: center;
+  padding: 12px 22px;
+}
+.status-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+}
+.status-cell-state {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.status-cell-actions {
+  justify-self: end;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-direction: row;
+}
+.status-value {
+  font-family: var(--font-led), monospace;
+  font-size: 1rem;
+  color: var(--chassis-ink);
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+.state-led {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.55);
+  border: 1px solid var(--chassis-edge);
+}
+.state-led-idle    { background: transparent; }
+.state-led-loading { background: var(--accent-primary-ui);  animation: pulse 1s infinite; }
+.state-led-ok      { background: var(--accent-positive); }
+.state-led-error   { background: var(--accent-attention); animation: pulse 0.7s infinite; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+/* ----- Buttons (refresh + theme) ----- */
+
+.refresh-btn,
+.theme-btn {
+  font-family: var(--font-label);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--chassis-ink);
+  background: linear-gradient(180deg, var(--chassis-hi) 0%, var(--chassis) 50%, var(--chassis-lo) 100%);
+  border: 1px solid var(--chassis-edge);
+  border-top-color: var(--chassis-hi);
+  border-left-color: var(--chassis-hi);
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.refresh-btn:hover,
+.theme-btn:hover    { filter: brightness(1.05); }
+.refresh-btn:active,
+.theme-btn:active   { transform: translateY(1px); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35); }
+.refresh-btn:disabled { opacity: 0.6; cursor: progress; }
+
+/* 508: visible keyboard focus outline on every interactive control.
+   primary-ui (not primary) so the outline passes 3:1 UI contrast on chassis. */
+.refresh-btn:focus-visible,
+.theme-btn:focus-visible {
+  outline: 3px solid var(--accent-primary-ui);
+  outline-offset: 2px;
+}
+
+/* ----- Cycle dots ----- */
+
+.cycle-dots {
+  display: inline-flex;
+  gap: 4px;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+.cycle-dots .dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--chassis-edge);
+}
+.cycle-dots .dot.active {
+  background: var(--accent-primary-ui);
+}
+
+/* ----- Loading dimmer ----- */
+
+.rack.loading .chassis:not(.status-bar):not(.rack-header) {
+  filter: brightness(0.75);
+  transition: filter 0.15s;
+}
+
+/* ----- Responsive collapse ----- */
+
+@media (max-width: 900px) {
+  .rack {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "hero"
+      "distribution"
+      "dial-real"
+      "dial-ai"
+      "meter"
+      "scatter"
+      "status";
+  }
+  .led-hero .led-value          { font-size: 3rem; }
+  .led-hero .led-ghost::before  { font-size: 3rem; }
+  .led-med .led-value           { font-size: 2rem; }
+  .led-med .led-ghost::before   { font-size: 2rem; }
+  .nameplate-title              { font-size: 1.2rem; letter-spacing: 0.22em; }
+  .status-bar                   { grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+  .status-cell-actions          { grid-column: span 2; justify-self: stretch;
+                                  flex-direction: column; align-items: stretch; }
+  .refresh-btn, .theme-btn      { width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .distribution-readouts {
+    grid-template-columns: 1fr;
+  }
+}

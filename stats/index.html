@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="vaulttec">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI or Not? — Live Data Station</title>
+
+  <!-- Seven-segment LED display font (instrument-panel numerics).
+       Fallback chain ensures numerics remain legible if CDN fails. -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/dseg@0.46.0/css/dseg.min.css">
+
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <!-- Rack backdrop. Widgets sit on a darkened lab surface. -->
+  <main class="rack" id="rack">
+
+    <!-- Nameplate / context framing. The Census framing ("we are a
+         measurement agency and here is us measuring something live")
+         only lands if the page reads as an instrument from first glance. -->
+    <header class="rack-header chassis">
+      <span class="rivet rivet-tl"></span>
+      <span class="rivet rivet-tr"></span>
+      <span class="rivet rivet-bl"></span>
+      <span class="rivet rivet-br"></span>
+      <div class="nameplate">
+        <div class="nameplate-model">MODEL: AI-OR-NOT · MK.II · DATA-COLLECTION STATION</div>
+        <div class="nameplate-title">LIVE DATA STATION</div>
+        <div class="nameplate-sub">HOW DO HUMANS PERFORM? AND WHO DROPS OUT?</div>
+      </div>
+    </header>
+
+    <!-- Widget 1: hero LED cycling the 5 data-collection facts. -->
+    <section class="chassis chassis-hero" id="widget-hero" aria-live="polite">
+      <span class="rivet rivet-tl"></span>
+      <span class="rivet rivet-tr"></span>
+      <span class="rivet rivet-bl"></span>
+      <span class="rivet rivet-br"></span>
+
+      <div class="panel-label" id="hero-label">INITIALIZING</div>
+      <div class="bezel bezel-hero">
+        <div class="led led-hero">
+          <span class="led-ghost" aria-hidden="true"></span>
+          <span class="led-value" id="hero-value">--------</span>
+        </div>
+      </div>
+      <div class="panel-caption">
+        <span class="cycle-dots" id="hero-dots" aria-hidden="true"></span>
+        <span>AUTO-CYCLE · 5s INTERVAL</span>
+      </div>
+    </section>
+
+    <!-- Widget 2: Score Distribution with mean + median overlays.
+         The teaching moment is the gap between mean and median. -->
+    <section class="chassis chassis-distribution" id="widget-distribution">
+      <span class="rivet rivet-tl"></span>
+      <span class="rivet rivet-tr"></span>
+      <span class="rivet rivet-bl"></span>
+      <span class="rivet rivet-br"></span>
+
+      <div class="panel-title">SCORE DISTRIBUTION</div>
+      <div class="distribution-readouts">
+        <div class="readout-pair">
+          <div class="panel-label">MEAN</div>
+          <div class="bezel bezel-small">
+            <div class="led led-sm led-primary">
+              <span class="led-value" id="mean-value">--.-</span>
+            </div>
+          </div>
+        </div>
+        <div class="readout-pair">
+          <div class="panel-label">MEDIAN</div>
+          <div class="bezel bezel-small">
+            <div class="led led-sm led-secondary">
+              <span class="led-value" id="median-value">--.-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="plot-host" id="plot-distribution"
+           role="img" aria-label="Histogram of session scores, 0 through 10, with mean and median marked"></div>
+      <div class="panel-caption teaching-caption">
+        Why are these different? Scores are skewed. Ask your favorite statistician.
+      </div>
+    </section>
+
+    <!-- Widget 3a: REAL DETECTOR dial -->
+    <section class="chassis chassis-dial" id="widget-dial-real">
+      <span class="rivet rivet-tl"></span>
+      <span class="rivet rivet-tr"></span>
+      <span class="rivet rivet-bl"></span>
+      <span class="rivet rivet-br"></span>
+
+      <div class="panel-title">REAL DETECTOR</div>
+      <div class="dial-host" id="dial-real"
+           role="img" aria-label="REAL detector dial"></div>
+      <div class="bezel bezel-small dial-led">
+        <div class="led led-sm led-primary">
+          <span class="led-value" id="dial-real-value">--.-</span>
+          <span class="led-unit">%</span>
+        </div>
+      </div>
+      <div class="panel-caption" id="dial-real-caption">OF 0 REAL ITEMS ANSWERED</div>
+    </section>
+
+    <!-- Widget 3b: AI DETECTOR dial -->
+    <section class="chassis chassis-dial" id="widget-dial-ai">
+      <span class="rivet rivet-tl"></span>
+      <span class="rivet rivet-tr"></span>
+      <span class="rivet rivet-bl"></span>
+      <span class="rivet rivet-br"></span>
+
+      <div class="panel-title">AI DETECTOR</div>
+      <div class="dial-host" id="dial-ai"
+           role="img" aria-label="AI detector dial"></div>
+      <div class="bezel bezel-small dial-led">
+        <div class="led led-sm led-primary">
+          <span class="led-value" id="dial-ai-value">--.-</span>
+          <span class="led-unit">%</span>
+        </div>
+      </div>
+      <div class="panel-caption" id="dial-ai-caption">OF 0 AI ITEMS ANSWERED</div>
+    </section>
+
+    <!-- Widget 4a: Completion Rate dial -->
+    <section class="chassis chassis-dial" id="widget-completion">
+      <span class="rivet rivet-tl"></span>
+      <span class="rivet rivet-tr"></span>
+      <span class="rivet rivet-bl"></span>
+      <span class="rivet rivet-br"></span>
+
+      <div class="panel-title">COMPLETION RATE</div>
+      <div class="dial-host" id="dial-completion"
+           role="img" aria-label="Completion rate dial"></div>
+      <div class="bezel bezel-small dial-led">
+        <div class="led led-sm led-primary">
+          <span class="led-value" id="dial-completion-value">--.-</span>
+          <span class="led-unit">%</span>
+        </div>
+      </div>
+      <div class="panel-caption" id="dial-completion-caption">0 OF 0 SESSIONS FINISHED</div>
+      <div class="panel-caption teaching-caption">
+        Why might people quit before finishing? Should we throw their answers out?
+      </div>
+    </section>
+
+    <!-- Widget 4b: Dropout scatter -->
+    <section class="chassis chassis-scatter" id="widget-scatter">
+      <span class="rivet rivet-tl"></span>
+      <span class="rivet rivet-tr"></span>
+      <span class="rivet rivet-bl"></span>
+      <span class="rivet rivet-br"></span>
+
+      <div class="panel-title">DROPOUT MAP</div>
+      <div class="scatter-counts">
+        <div class="scatter-count-cell cat-low">
+          <span class="cat-symbol" aria-hidden="true">&#9679;</span>
+          <span class="panel-label">&lt;35% CORRECT</span>
+          <span class="cat-count" id="count-low">0</span>
+        </div>
+        <div class="scatter-count-cell cat-mid">
+          <span class="cat-symbol" aria-hidden="true">&#9632;</span>
+          <span class="panel-label">35-75% CORRECT</span>
+          <span class="cat-count" id="count-mid">0</span>
+        </div>
+        <div class="scatter-count-cell cat-high">
+          <span class="cat-symbol" aria-hidden="true">&#9650;</span>
+          <span class="panel-label">&gt;75% CORRECT</span>
+          <span class="cat-count" id="count-high">0</span>
+        </div>
+      </div>
+      <div class="plot-host" id="plot-scatter"
+           role="img" aria-label="Scatter of dropout sessions: items answered vs accuracy at quit, colored and shaped by category"></div>
+      <div class="panel-caption teaching-caption">
+        Each dot is someone who quit early. Shape and color show their accuracy when they left.
+      </div>
+    </section>
+
+    <!-- Bottom status bar with refresh + theme toggle. -->
+    <footer class="status-bar chassis" id="status-bar">
+      <span class="rivet rivet-tl"></span>
+      <span class="rivet rivet-tr"></span>
+      <span class="rivet rivet-bl"></span>
+      <span class="rivet rivet-br"></span>
+
+      <div class="status-cell">
+        <span class="panel-label">SESSIONS</span>
+        <span class="status-value" id="status-sessions">N=-</span>
+      </div>
+      <div class="status-cell">
+        <span class="panel-label">LAST REFRESH</span>
+        <span class="status-value" id="status-timestamp">--:--:--</span>
+      </div>
+      <div class="status-cell status-cell-state">
+        <span class="state-led state-led-idle" id="state-led" aria-hidden="true"></span>
+        <span class="status-value" id="status-message">IDLE</span>
+      </div>
+      <div class="status-cell status-cell-actions">
+        <button type="button" class="theme-btn" id="theme-btn"
+                aria-label="Toggle visual theme">
+          THEME: VAULT-TEC
+        </button>
+        <button type="button" class="refresh-btn" id="refresh-btn"
+                aria-label="Refresh data">
+          REFRESH
+        </button>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- Frontend config — APPS_SCRIPT_URL lives here per AD-001. -->
+  <script src="../config.js"></script>
+
+  <!-- Distribution and scatter visualizations are now hand-rolled SVG inside dashboard.js. -->
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
