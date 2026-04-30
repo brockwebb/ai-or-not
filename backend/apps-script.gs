@@ -546,6 +546,19 @@ function migrateSessionsSheet_v2() {
     ". ItemEvents sheet ensured.");
 }
 
+/**
+ * Manual reconciliation entry point. Run from the Apps Script editor
+ * after a deploy or on demand. Idempotent — re-running does nothing
+ * once all ghost-completes are resolved.
+ *
+ * Logs the count of rows repaired on this call.
+ */
+function repairGhostCompletes() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var result = _reconcileGhostCompletes(ss);
+  Logger.log("repairGhostCompletes complete. Reconciled " + result.reconciled + " row(s).");
+}
+
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
@@ -646,10 +659,131 @@ function _updateScoreDistribution(ss, score) {
 }
 
 /**
- * Read all aggregate data from ItemStats and ScoreDistribution.
- * Returns { total_sessions, item_stats: [...], score_distribution: [...] }
+ * Reconcile ghost-complete sessions: rows with status='started' that actually
+ * have exactly MAX_SCORE item_answered events in ItemEvents. These are
+ * save failures where the completion POST never landed, not real dropouts.
+ *
+ * Flips each matching row to status='complete', reconstructs score +
+ * items_json from the events, and catches aggregate sheets (ItemStats,
+ * ScoreDistribution) up so the session counts the same way a normal
+ * completion would.
+ *
+ * Called from _readAggregates on every GET so data self-heals over time.
+ * Safe to call repeatedly — only touches rows that still match the strict
+ * criteria after the status re-check inside the lock.
+ *
+ * Returns { reconciled: N } — count of rows repaired on this call.
+ */
+function _reconcileGhostCompletes(ss) {
+  var sessionsSheet = ss.getSheetByName(SHEET_SESSIONS);
+  var eventsSheet   = ss.getSheetByName(SHEET_ITEM_EVENTS);
+  if (!sessionsSheet || !eventsSheet) return { reconciled: 0 };
+
+  var sessionsLastRow = sessionsSheet.getLastRow();
+  var eventsLastRow   = eventsSheet.getLastRow();
+  if (sessionsLastRow < 2 || eventsLastRow < 2) return { reconciled: 0 };
+
+  // Collect candidate rows: status='started' at time of scan.
+  var statusIdx = SESSIONS_HEADERS.indexOf("status");
+  var sessRows  = sessionsSheet.getRange(2, 1, sessionsLastRow - 1, SESSIONS_HEADERS.length).getValues();
+  var startedRows = {}; // sid -> { rowNumber }
+  for (var i = 0; i < sessRows.length; i++) {
+    if (String(sessRows[i][statusIdx]) === "started") {
+      startedRows[String(sessRows[i][0])] = { rowNumber: i + 2 };
+    }
+  }
+  var startedIds = Object.keys(startedRows);
+  if (startedIds.length === 0) return { reconciled: 0 };
+
+  // Walk ItemEvents once; bucket item_answered events by session_id.
+  var sidIdx     = ITEM_EVENTS_HEADERS.indexOf("session_id");
+  var typeIdx    = ITEM_EVENTS_HEADERS.indexOf("event_type");
+  var itemIdIdx  = ITEM_EVENTS_HEADERS.indexOf("item_id");
+  var correctIdx = ITEM_EVENTS_HEADERS.indexOf("correct");
+  var events     = eventsSheet.getRange(2, 1, eventsLastRow - 1, ITEM_EVENTS_HEADERS.length).getValues();
+
+  var perSession = {}; // sid -> [ { item_id, correct }, ... ]
+  for (var e = 0; e < events.length; e++) {
+    if (String(events[e][typeIdx]) !== "item_answered") continue;
+    var sid = String(events[e][sidIdx]);
+    if (!startedRows[sid]) continue;
+    if (!perSession[sid]) perSession[sid] = [];
+    perSession[sid].push({
+      item_id: String(events[e][itemIdIdx]),
+      correct: events[e][correctIdx] === true ||
+               String(events[e][correctIdx]).toLowerCase() === "true"
+    });
+  }
+
+  // Acquire the same lock the POST paths use. Prevents a completion POST
+  // arriving mid-reconcile from double-counting in ItemStats/ScoreDistribution.
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(10000); } catch (err) { return { reconciled: 0 }; }
+
+  var reconciled = 0;
+  try {
+    for (var j = 0; j < startedIds.length; j++) {
+      var sidJ  = startedIds[j];
+      var items = perSession[sidJ];
+      if (!items || items.length !== MAX_SCORE) continue;
+
+      var rowNum = startedRows[sidJ].rowNumber;
+
+      // Double-count guard: re-read status after lock acquired.
+      // If a completion POST flipped this row while we were waiting, bail —
+      // ItemStats and ScoreDistribution were already updated by that path.
+      var currentStatus = String(sessionsSheet.getRange(rowNum, _sessionsCol("status")).getValue());
+      if (currentStatus !== "started") continue;
+
+      var score = 0;
+      for (var k = 0; k < items.length; k++) if (items[k].correct) score++;
+
+      sessionsSheet.getRange(rowNum, _sessionsCol("items_json")).setValue(JSON.stringify(items));
+      sessionsSheet.getRange(rowNum, _sessionsCol("score")).setValue(score);
+      sessionsSheet.getRange(rowNum, _sessionsCol("total")).setValue(MAX_SCORE);
+      sessionsSheet.getRange(rowNum, _sessionsCol("status")).setValue("complete");
+
+      // Catch aggregate sheets up. These are NOT idempotent, which is why
+      // the status re-check above is essential.
+      _updateItemStats(ss, items);
+      _updateScoreDistribution(ss, score);
+
+      reconciled++;
+    }
+  } finally {
+    lock.releaseLock();
+  }
+
+  if (reconciled > 0) {
+    Logger.log("_reconcileGhostCompletes: reconciled " + reconciled + " session(s).");
+  }
+  return { reconciled: reconciled };
+}
+
+/**
+ * Read all aggregate data from ItemStats, ScoreDistribution, Sessions,
+ * and ItemEvents.
+ *
+ * Returns:
+ *   {
+ *     total_sessions,         // completed sessions (back-compat; = sessions_completed)
+ *     item_stats: [...],
+ *     score_distribution: [...],
+ *     sessions_started,       // total population ever started (started + completed)
+ *     sessions_completed,     // rows with status='complete'
+ *     dropouts: [              // one record per abandoned session
+ *       { session_id, items_answered, accuracy_at_quit }
+ *     ]
+ *   }
+ *
+ * Backward-compatible: existing fields unchanged; new fields added.
  */
 function _readAggregates(ss) {
+  // Self-heal first: promote any ghost-complete sessions (status='started'
+  // rows that actually have 10 item_answered events) to status='complete'
+  // so every aggregate below reflects accurate session counts and scores.
+  _reconcileGhostCompletes(ss);
+
   // Item stats
   var itemSheet = ss.getSheetByName(SHEET_ITEM_STATS);
   var itemData = itemSheet.getDataRange().getValues();
@@ -677,10 +811,70 @@ function _readAggregates(ss) {
     totalSessions += count;
   }
 
+  // Sessions status counts (started vs complete)
+  var sessionsSheet = ss.getSheetByName(SHEET_SESSIONS);
+  var sessionsLastRow = sessionsSheet ? sessionsSheet.getLastRow() : 0;
+  var sessions_started_only    = 0;  // status == 'started', still in flight / abandoned
+  var sessions_completed_count = 0;  // status == 'complete'
+  var startedSessionIds = {};        // session_id -> true for status='started' rows
+
+  if (sessionsLastRow > 1) {
+    var statusCol = SESSIONS_HEADERS.indexOf("status") + 1; // 1-based
+    var rows = sessionsSheet.getRange(2, 1, sessionsLastRow - 1, SESSIONS_HEADERS.length).getValues();
+    for (var i = 0; i < rows.length; i++) {
+      var s = String(rows[i][statusCol - 1]);
+      if (s === "started") {
+        sessions_started_only++;
+        startedSessionIds[String(rows[i][0])] = true;
+      } else if (s === "complete") {
+        sessions_completed_count++;
+      }
+    }
+  }
+
+  // Aggregate item_answered events per session for dropout classification.
+  // Only sessions flagged status='started' in Sessions are candidates.
+  var dropouts = [];
+  var eventsSheet = ss.getSheetByName(SHEET_ITEM_EVENTS);
+  var eventsLastRow = eventsSheet ? eventsSheet.getLastRow() : 0;
+  if (eventsLastRow > 1 && sessions_started_only > 0) {
+    var sessionIdIdx = ITEM_EVENTS_HEADERS.indexOf("session_id");
+    var eventTypeIdx = ITEM_EVENTS_HEADERS.indexOf("event_type");
+    var correctIdx   = ITEM_EVENTS_HEADERS.indexOf("correct");
+
+    var events = eventsSheet.getRange(2, 1, eventsLastRow - 1, ITEM_EVENTS_HEADERS.length).getValues();
+    var perSession = {}; // sid -> { answered, correct }
+    for (var e = 0; e < events.length; e++) {
+      var row = events[e];
+      if (String(row[eventTypeIdx]) !== "item_answered") continue;
+      var sid = String(row[sessionIdIdx]);
+      if (!startedSessionIds[sid]) continue; // ignore events for completed sessions
+      if (!perSession[sid]) perSession[sid] = { answered: 0, correct: 0 };
+      perSession[sid].answered++;
+      var c = row[correctIdx];
+      if (c === true || String(c).toLowerCase() === "true") {
+        perSession[sid].correct++;
+      }
+    }
+    for (var sid2 in perSession) {
+      if (!perSession.hasOwnProperty(sid2)) continue;
+      var rec = perSession[sid2];
+      if (rec.answered === 0) continue;
+      dropouts.push({
+        session_id:       sid2,
+        items_answered:   rec.answered,
+        accuracy_at_quit: rec.correct / rec.answered
+      });
+    }
+  }
+
   return {
     total_sessions:     totalSessions,
     item_stats:         itemStats,
-    score_distribution: scoreDist
+    score_distribution: scoreDist,
+    sessions_started:   sessions_started_only + sessions_completed_count,
+    sessions_completed: sessions_completed_count,
+    dropouts:           dropouts
   };
 }
 
